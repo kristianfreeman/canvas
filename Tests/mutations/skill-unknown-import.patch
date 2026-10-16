@@ -1,0 +1,22 @@
+The skill's TSX imports a component the kit doesn't export
+
+--- a/skills/mac-canvas/SKILL.md
++++ b/skills/mac-canvas/SKILL.md
+@@ -125,7 +125,7 @@ A `.tsx` file default-exports a component that gets `{ data }` as props. It can
+ - **Input:** `Button`, `Input`, `TextArea`, `Select`, `Checkbox`, `Form`
+ 
+ ```tsx
+-import { Card, Progress, Stack, Stat, Text, useChannel } from 'canvas'
++import { Card, ProgressBar, Stack, Stat, Text, useChannel } from 'canvas'
+ 
+ type Build = { done: number; total: number }
+ 
+@@ -135,7 +135,7 @@ export default function BuildProgress({ data }: { data: Build }) {
+     <Card title="Build">
+       <Stack gap={10}>
+         <Stat label="Steps" value={`${data.done} of ${data.total}`} />
+-        <Progress value={data.done} max={data.total} />
++        <ProgressBar value={data.done} max={data.total} />
+         <Text muted>{status ? `${status.step}: ${status.ok ? 'passing' : 'failing'}` : 'Waiting for status'}</Text>
+       </Stack>
+     </Card>

@@ -92,6 +92,9 @@ WebKit page renders only TSX that uses raw DOM or CSS.
 page API, the kit's channel hooks and the system channels.
 `docs/positioning.md` explains placement in depth, with worked frames. Read
 them before you change behavior, and update them in the same commit.
+`skills/mac-canvas/SKILL.md` teaches agents the CLI and the kit, so update
+it in that commit too when a command, flag, exit code or kit export it
+mentions changes.
 
 In short: the commands are `show`, `toggle`, `update`, `move`, `hide`,
 `list`, `pub`, `sub`, `ping` and `help`, and exit codes are 0 success, 1
@@ -139,7 +142,10 @@ Keep it minimal and calm, with generous whitespace and no gradients.
   them.
 - **CLI tests** (`Tests/CLITests`): the C CLI from `cli/build.sh` against a
   recording server, checking request lines and exit codes.
-- **Renderer tests:** `bun test` over `web/src/*.test.ts` and the examples.
+  `SkillCommandTests` runs every bash block in `skills/mac-canvas/SKILL.md`
+  and fails on a command the CLI rejects.
+- **Renderer tests:** `bun test` over `web/src/*.test.ts`, the examples and
+  the TSX blocks in `skills/mac-canvas/SKILL.md`.
 
 `CANVAS_TEST_TIMEOUT` (seconds, default 90) caps each suite. Arguments after
 `--` go to `swift test`.

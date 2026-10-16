@@ -8,6 +8,11 @@ export const exampleFiles = readdirSync(dir).filter((file) => file.endsWith('.ts
 
 export const exampleSource = (file: string) => readFileSync(join(dir, file), 'utf8')
 
+/** The ```tsx blocks in the agent skill, which agents copy as written. */
+export const skillTsxBlocks = [
+  ...readFileSync(join(import.meta.dir, '../../skills/mac-canvas/SKILL.md'), 'utf8').matchAll(/^```tsx\n([\s\S]*?)^```$/gm),
+].map((match) => match[1])
+
 export type KeysData = { groups: { name: string; rows: { keys: string | string[]; desc: string }[] }[] }
 
 export const keysData = () => JSON.parse(readFileSync(join(dir, 'keys.json'), 'utf8')) as KeysData

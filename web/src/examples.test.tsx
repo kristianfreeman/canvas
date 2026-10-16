@@ -1,8 +1,8 @@
 import { afterEach, expect, test } from 'bun:test'
 import type { ComponentType } from 'react'
 import { renderToString } from 'react-dom/server'
-import { exampleFiles, exampleSource, keysData, sysSample } from './examples.fixtures'
-import { CanvasProvider, channelStore } from './kit'
+import { exampleFiles, exampleSource, keysData, skillTsxBlocks, sysSample } from './examples.fixtures'
+import { CanvasProvider, channelStore, kit } from './kit'
 import { evaluateTsx } from './tsx'
 
 const load = (file: string) => evaluateTsx(exampleSource(file)) as ComponentType<{ data: unknown }>
@@ -20,11 +20,22 @@ afterEach(() => channelStore.clear())
 
 test('there are examples to check', () => {
   expect(exampleFiles).toContain('top.tsx')
+  expect(skillTsxBlocks.length).toBeGreaterThanOrEqual(2)
 })
 
 test.each(exampleFiles)('%s compiles and default-exports a component', (file) => {
   expect(typeof load(file)).toBe('function')
 })
+
+test.each(skillTsxBlocks.map((source, index) => [index + 1, source]))(
+  'SKILL.md TSX block %d imports only kit exports and renders',
+  (_, source) => {
+    const imported = source.match(/import \{([^}]*)\} from 'canvas'/)?.[1].split(',').map((name) => name.trim()) ?? []
+    expect(imported.filter((name) => !(name in kit))).toEqual([])
+    const out = html(evaluateTsx(source) as ComponentType<{ data: unknown }>, { done: 1, total: 2 })
+    expect(out.length).toBeGreaterThan(0)
+  },
+)
 
 test('top.tsx renders placeholders before any channel data arrives', () => {
   const out = html(load('top.tsx'))

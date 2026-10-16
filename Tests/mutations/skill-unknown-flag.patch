@@ -1,0 +1,13 @@
+The skill teaches a flag the CLI doesn't take
+
+--- a/skills/mac-canvas/SKILL.md
++++ b/skills/mac-canvas/SKILL.md
+@@ -105,7 +105,7 @@ The panel is centered at 720 points wide by default, and its height follows the
+ canvas show - --id note-1 --stack notes --position top-right --width 360 <<'EOF'
+ **Build finished** in 4m 12s
+ EOF
+-canvas move --id note-1 --position bottom-right
++canvas move --id note-1 --corner bottom-right
+ ```
+ 
+ ## Manage panels

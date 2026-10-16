@@ -12,6 +12,15 @@ This README covers installing, the commands you'll use most, the TSX component k
 
 The script builds the web renderer, the Swift server and the C CLI, then assembles `~/Applications/Canvas.app` (signed ad hoc) and runs the app's `Contents/Resources/setup.sh`, which links the CLI at `~/.local/bin/canvas` and loads a LaunchAgent, `~/Library/LaunchAgents/dev.kristian.canvas.plist`. launchd listens on the socket and starts the server at login and on the first connection, so the first `canvas` call finds a running server with a native page ready. Rerun the script to upgrade. It stops the running server first. To remove Canvas, run `~/Applications/Canvas.app/Contents/Resources/setup.sh --uninstall`, then delete the app.
 
+### Agent skill
+
+`skills/mac-canvas/SKILL.md` teaches a coding agent when to open a panel and how: showing pages, asking and waiting, live updates, placement and the TSX kit. Link the folder into each agent's skills directory, so it stays current as you pull:
+
+```sh
+ln -s "$PWD/skills/mac-canvas" ~/.claude/skills/mac-canvas
+ln -s "$PWD/skills/mac-canvas" ~/.cursor/skills/mac-canvas
+```
+
 ## Show a page
 
 `canvas show` returns once the page has rendered. A TSX file that fails to compile or render exits 1 with the message on stderr, so an agent learns right away whether its component works.
