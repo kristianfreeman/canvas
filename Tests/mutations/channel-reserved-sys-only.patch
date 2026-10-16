@@ -1,0 +1,11 @@
+Only canvas.sys.* is reserved, so canvas.anything is publishable
+
+--- a/Sources/CanvasCore/ChannelStore.swift
++++ b/Sources/CanvasCore/ChannelStore.swift
+@@ -75,5 +75,5 @@
+ 
+     public static func isReserved(_ name: String) -> Bool {
+-        name == "canvas" || name.hasPrefix(reservedPrefix)
++        name.hasPrefix("canvas.sys.")
+     }
+ 

@@ -1,0 +1,11 @@
+TSX compiles without the TypeScript transform
+
+--- a/web/src/tsx.ts
++++ b/web/src/tsx.ts
+@@ -44,5 +44,5 @@
+   try {
+     return transform(source, {
+-      transforms: ['typescript', 'jsx', 'imports'],
++      transforms: ['jsx', 'imports'],
+       jsxRuntime: 'classic',
+       jsxPragma: 'React.createElement',

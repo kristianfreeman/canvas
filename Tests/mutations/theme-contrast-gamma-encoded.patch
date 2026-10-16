@@ -1,0 +1,11 @@
+Accent foreground contrast uses gamma-encoded channels instead of linear light
+
+--- a/Sources/CanvasCore/ThemeColor.swift
++++ b/Sources/CanvasCore/ThemeColor.swift
+@@ -58,5 +58,5 @@
+     public var luminance: Double {
+         func linear(_ value: Double) -> Double {
+-            value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
++            value
+         }
+         return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)

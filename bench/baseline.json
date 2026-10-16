@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "bin": "~/Developer/canvas/.build/release/canvas",
+    "resolved": "~/Developer/canvas/.build/arm64-apple-macosx/release/canvas",
+    "home": "/tmp/canvas-bench.HWHm",
+    "date": "2026-10-14T23:32:17Z",
+    "git": "f23027f",
+    "macos": "26.7.1",
+    "runs": "30"
+  },
+  "metrics": {
+    "mem_idle": {
+      "mb": 46.7,
+      "processes": [
+        {
+          "pid": 11856,
+          "name": "canvas",
+          "bytes": 19940408
+        },
+        {
+          "pid": 11859,
+          "name": "com.apple.WebKit.GPU",
+          "bytes": 19694336
+        },
+        {
+          "pid": 11861,
+          "name": "com.apple.WebKit.Networking",
+          "bytes": 6292104
+        },
+        {
+          "pid": 11866,
+          "name": "com.apple.audio.SandboxHelper",
+          "bytes": 3064288
+        }
+      ]
+    },
+    "mem_one_panel": {
+      "mb": 96.1,
+      "processes": [
+        {
+          "pid": 17408,
+          "name": "com.apple.WebKit.WebContent",
+          "bytes": 50987968
+        },
+        {
+          "pid": 11856,
+          "name": "canvas",
+          "bytes": 19940408
+        },
+        {
+          "pid": 11859,
+          "name": "com.apple.WebKit.GPU",
+          "bytes": 19776280
+        },
+        {
+          "pid": 11861,
+          "name": "com.apple.WebKit.Networking",
+          "bytes": 7045768
+        },
+        {
+          "pid": 11866,
+          "name": "com.apple.audio.SandboxHelper",
+          "bytes": 3064288
+        }
+      ]
+    },
+    "cli_help": {
+      "p50": 44.7,
+      "p95": 56.57,
+      "mean": 46.97,
+      "min": 40.52,
+      "max": 69.47,
+      "runs": 30
+    },
+    "cold_show": {
+      "p50": 375.06,
+      "p95": 396.19,
+      "mean": 380.44,
+      "min": 372.1,
+      "max": 396.77,
+      "runs": 10
+    },
+    "hide": {
+      "p50": 56.4,
+      "p95": 68.83,
+      "mean": 57.52,
+      "min": 43.44,
+      "max": 72.64,
+      "runs": 30
+    },
+    "ping": {
+      "p50": 49.9,
+      "p95": 60.73,
+      "mean": 50.44,
+      "min": 30.56,
+      "max": 68.71,
+      "runs": 30
+    },
+    "show_new": {
+      "p50": 248.23,
+      "p95": 267.57,
+      "mean": 235.05,
+      "min": 176.95,
+      "max": 270.25,
+      "runs": 30
+    },
+    "show_new_code": {
+      "p50": 1103.61,
+      "p95": 1120.57,
+      "mean": 1094.6,
+      "min": 1032.75,
+      "max": 1123.49,
+      "runs": 30
+    },
+    "show_new_tsx": {
+      "p50": 254.5,
+      "p95": 263.04,
+      "mean": 240.05,
+      "min": 185.28,
+      "max": 264.96,
+      "runs": 30
+    },
+    "show_replace": {
+      "p50": 53.39,
+      "p95": 69.13,
+      "mean": 56.03,
+      "min": 46.96,
+      "max": 83.23,
+      "runs": 30
+    },
+    "toggle_pair": {
+      "p50": 328.54,
+      "p95": 362.59,
+      "mean": 324.85,
+      "min": 253.13,
+      "max": 372.13,
+      "runs": 30
+    }
+  },
+  "trace_show_new": {
+    "runs": 20,
+    "median_ms": {
+      "cliStart": 0.0,
+      "accept": 0.626,
+      "sent": 0.77,
+      "parsed": 0.83,
+      "dispatch": 25.161,
+      "visible": 150.668,
+      "reply": 150.241,
+      "received": 150.371,
+      "total": 150.464
+    }
+  }
+}

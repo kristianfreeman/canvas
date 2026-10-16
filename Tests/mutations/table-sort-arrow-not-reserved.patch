@@ -1,0 +1,11 @@
+Unsorted table headers stop reserving the sort arrow, so widths jump when the sort moves
+
+--- a/Sources/CanvasApp/Native/Kit/KitTableView.swift
++++ b/Sources/CanvasApp/Native/Kit/KitTableView.swift
+@@ -154,5 +154,5 @@
+             HStack(alignment: .firstTextBaseline, spacing: 4) {
+                 BlockFlow(nodes: cell.children)
+-                if let sort { InlineLabel(text: sort.arrow).opacity(sorted ? 1 : 0) }
++                if let sort, sorted { InlineLabel(text: sort.arrow) }
+             }
+             .kitText { $0 = TableCellChrome<EmptyView>.headerStyle($0).with { if lit { $0.ink = .fg } } }

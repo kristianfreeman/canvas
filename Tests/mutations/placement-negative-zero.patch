@@ -1,0 +1,11 @@
+A numeric -0.0 (what the CLI sends for --at -0) loses its sign
+
+--- a/Sources/CanvasCore/PlacementValues.swift
++++ b/Sources/CanvasCore/PlacementValues.swift
+@@ -14,5 +14,5 @@
+ 
+     public init(_ value: CGFloat, _ unit: Unit = .points) {
+-        self.init(magnitude: abs(value), unit: unit, negative: value.sign == .minus)
++        self.init(magnitude: abs(value), unit: unit, negative: value < 0)
+     }
+ 

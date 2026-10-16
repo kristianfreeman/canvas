@@ -1,0 +1,12 @@
+A native panel reports its scroll viewport's height instead of the content's full height
+
+--- a/Sources/CanvasApp/Native/NativePanelSurface.swift
++++ b/Sources/CanvasApp/Native/NativePanelSurface.swift
+@@ -83,6 +83,6 @@
+     func measure() -> CGFloat {
+         hosting.layoutSubtreeIfNeeded()
+         let laidOut = surface.laidOut
+-        let height = hosting.bounds.height - laidOut.viewport + laidOut.content
++        let height = hosting.bounds.height - laidOut.viewport + min(laidOut.content, laidOut.viewport)
+         lastHeight = height
+         return height

@@ -1,0 +1,13 @@
+An edited file that needed WebKit before still skips the native attempt
+
+--- a/Sources/CanvasCore/RouteCache.swift
++++ b/Sources/CanvasCore/RouteCache.swift
+@@ -24,7 +24,7 @@
+     /// `.web` when this exact content needed WebKit before, else `.native`.
+     public mutating func route(path: String?, source: String) -> Renderer {
+         let (key, hash) = Self.key(path: path, source: source)
+-        guard let index = entries.firstIndex(where: { $0.key == key }), entries[index].source == hash else {
++        guard let index = entries.firstIndex(where: { $0.key == key }) else {
+             return .native
+         }
+         entries.append(entries.remove(at: index))

@@ -1,0 +1,11 @@
+A Markdown block with an unknown type drops every block after it
+
+--- a/Sources/CanvasCore/MarkdownBlocks.swift
++++ b/Sources/CanvasCore/MarkdownBlocks.swift
+@@ -108,5 +108,5 @@
+ public enum MarkdownBlocks {
+     public static func decode(_ value: JSONValue?) -> [MarkdownBlock] {
+-        (value?.array ?? []).compactMap(block)
++        Array((value?.array ?? []).lazy.map(block).prefix { $0 != nil }.compactMap { $0 })
+     }
+ 

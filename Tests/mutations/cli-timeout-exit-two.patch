@@ -1,0 +1,11 @@
+--timeout exits 2 instead of 3
+
+--- a/cli/events.c
++++ b/cli/events.c
+@@ -100,5 +100,5 @@
+     }
+     hide_panel(f->hide_id);
+-    return 3;
++    return 2;
+ }
+ 

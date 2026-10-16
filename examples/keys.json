@@ -1,0 +1,142 @@
+{
+  "groups": [
+    {
+      "name": "Workspaces",
+      "rows": [
+        {
+          "keys": "Hyper 1–7",
+          "desc": "Go to workspace, again to go back"
+        },
+        {
+          "keys": "Hyper Tab",
+          "desc": "Previous workspace"
+        }
+      ]
+    },
+    {
+      "name": "Windows",
+      "rows": [
+        {
+          "keys": "Hyper H J K L",
+          "desc": "Focus left, down, up, right"
+        },
+        {
+          "keys": "Hyper ← ↑ ↓ →",
+          "desc": "Move window"
+        },
+        {
+          "keys": "Hyper - =",
+          "desc": "Shrink, grow"
+        },
+        {
+          "keys": "Hyper F",
+          "desc": "Fullscreen"
+        },
+        {
+          "keys": "Hyper T",
+          "desc": "Float or tile"
+        }
+      ]
+    },
+    {
+      "name": "Layout",
+      "rows": [
+        {
+          "keys": "Hyper E",
+          "desc": "Make primary, again to even out"
+        },
+        {
+          "keys": "Hyper R",
+          "desc": "Tile, again to flip direction"
+        },
+        {
+          "keys": "Hyper Delete",
+          "desc": "Reset layout"
+        }
+      ]
+    },
+    {
+      "name": "Apps",
+      "rows": [
+        {
+          "keys": "Hyper C",
+          "desc": "Cursor"
+        },
+        {
+          "keys": "Hyper Return",
+          "desc": "Ghostty"
+        },
+        {
+          "keys": "Hyper B",
+          "desc": "Chrome"
+        },
+        {
+          "keys": "Hyper S",
+          "desc": "Slack"
+        },
+        {
+          "keys": "Hyper G",
+          "desc": "Grok Bot"
+        },
+        {
+          "keys": "Hyper N",
+          "desc": "Granola"
+        },
+        {
+          "keys": "Hyper M",
+          "desc": "Gmail"
+        },
+        {
+          "keys": "Hyper D",
+          "desc": "Notion Calendar"
+        }
+      ]
+    },
+    {
+      "name": "Other",
+      "rows": [
+        {
+          "keys": "Hyper `",
+          "desc": "Quick terminal"
+        },
+        {
+          "keys": "Hyper V",
+          "desc": "Clipboard history"
+        },
+        {
+          "keys": "Caps Lock tap",
+          "desc": "Escape"
+        },
+        {
+          "keys": "Hyper I",
+          "desc": "This sheet"
+        }
+      ]
+    },
+    {
+      "name": "Move mode",
+      "rows": [
+        {
+          "keys": "Hyper W → 1–7",
+          "desc": "Send window to workspace"
+        },
+        {
+          "keys": "Hyper W → Arrows",
+          "desc": "Send window to monitor"
+        },
+        {
+          "keys": "Hyper W → Tab",
+          "desc": "Send workspace to next monitor"
+        },
+        {
+          "keys": "Hyper W → R",
+          "desc": "Restart, re-sort windows"
+        },
+        {
+          "keys": "Hyper W → Esc",
+          "desc": "Cancel"
+        }
+      ]
+    }
+  ]
+}

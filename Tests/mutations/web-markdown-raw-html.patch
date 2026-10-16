@@ -1,0 +1,11 @@
+Markdown passes raw HTML through to the page
+
+--- a/web/src/markdown.ts
++++ b/web/src/markdown.ts
+@@ -4,5 +4,5 @@
+ import { codeBlockHtml } from './highlight'
+ 
+-const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
++const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
+   .use(footnote)
+   .use(taskLists, { enabled: false, label: true })

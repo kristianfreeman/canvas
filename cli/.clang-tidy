@@ -1,0 +1,41 @@
+# clang-tidy for the C CLI. Run by scripts/lint.sh; every finding fails.
+#
+# Disabled checks, and why:
+# - readability-magic-numbers: exit codes, buffer sizes and protocol
+#   constants (64, 1e9, 20 ms) read better inline than as named constants.
+# - bugprone-easily-swappable-parameters: flags every (const char *, const
+#   char *) pair, which is most of a C string API.
+# - clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling:
+#   wants Annex K functions (memcpy_s and so on), which libSystem doesn't
+#   provide.
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  misc-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-magic-numbers,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*/cli/.*'
+CheckOptions:
+  # include-cleaner maps libSystem symbols to SDK-internal headers (EINTR to
+  # sys/errno.h, pid_t to sys/_types/_pid_t.h), so it can't be satisfied
+  # with the public headers. Keep it for the project's own headers only.
+  misc-include-cleaner.IgnoreHeaders: 'MacOSX[0-9.]*\.sdk/.*'
+  readability-function-cognitive-complexity.Threshold: 10
+  readability-function-size.LineThreshold: 60
+  readability-function-size.StatementThreshold: 40
+  readability-function-size.ParameterThreshold: 4
+  readability-function-size.NestingThreshold: 3
+  # In C, &&, || and ! have type int, so `return a && b;` from a bool
+  # function counts as an int-to-bool conversion. Allow just that case.
+  readability-implicit-bool-conversion.AllowLogicalOperatorConversion: true
+  # Allow the conventional short C names and nothing else.
+  readability-identifier-length.IgnoredVariableNames: '^(i|j|k|n|p|s|t|v|c|r|f|o|a|b|fd|at|it|ap|sa|st|ts|ms|ns|lo|cp|id)$'
+  readability-identifier-length.IgnoredParameterNames: '^(i|n|p|s|v|c|r|f|o|a|b|fd|at|it|ap|in|ms|ns|lo|hi|cp|id)$'
+  readability-identifier-length.IgnoredLoopCounterNames: '^[ijkp]$'

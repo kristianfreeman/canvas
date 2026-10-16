@@ -1,0 +1,12 @@
+A dragged panel stays in its stack, so the next reflow snaps it back to its slot
+
+--- a/Sources/CanvasCore/PanelLayout.swift
++++ b/Sources/CanvasCore/PanelLayout.swift
+@@ -101,7 +101,6 @@
+         anchorPoint = anchor.point(of: frame)
+         lastFrame = frame
+         guard move == .drag, let group = placement.stack else { return nil }
+-        placement.stack = nil
+         placement.given.remove(.stack)
+         return group
+     }

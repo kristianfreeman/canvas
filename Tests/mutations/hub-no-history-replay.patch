@@ -1,0 +1,12 @@
+A page subscribing to a channel gets no buffered history
+
+--- a/Sources/CanvasApp/ChannelHub.swift
++++ b/Sources/CanvasApp/ChannelHub.swift
+@@ -76,7 +76,4 @@
+         }) else { return }
+         link.subscriptions[channel] = id
+-        if let value = store.latest(channel) {
+-            link.queueFull(channel, value: value, history: store.history(channel))
+-        }
+     }
+ 

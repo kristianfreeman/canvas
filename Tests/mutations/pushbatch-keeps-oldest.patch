@@ -1,0 +1,11 @@
+A page that falls behind keeps the oldest values instead of the newest
+
+--- a/Sources/CanvasCore/PushBatch.swift
++++ b/Sources/CanvasCore/PushBatch.swift
+@@ -57,5 +57,5 @@
+     private static func capped(_ values: [Any], _ limit: Int) -> [Any]? {
+         guard !values.isEmpty else { return nil }
+-        return values.count > limit ? Array(values.suffix(max(limit, 1))) : values
++        return values.count > limit ? Array(values.prefix(max(limit, 1))) : values
+     }
+ }

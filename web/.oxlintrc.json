@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "react", "oxc", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    ".agent/**",
+    ".agents/**",
+    ".claude/**",
+    ".codex/**",
+    ".cursor/**",
+    "tools/oxlint/**"
+  ],
+  "jsPlugins": [
+    { "name": "complexity", "specifier": "./tools/oxlint/complexity/index.ts" }
+  ],
+  "rules": {
+    "eslint/complexity": ["error", { "max": 8 }],
+    "complexity/cognitive-complexity": ["error", 10],
+    "eslint/max-depth": ["error", { "max": 3 }],
+    "eslint/max-nested-callbacks": ["error", { "max": 3 }],
+    "eslint/max-params": ["error", { "max": 3 }],
+    "eslint/max-statements": ["error", { "max": 20 }],
+    "eslint/max-lines-per-function": ["error", { "max": 60, "skipBlankLines": true, "skipComments": true }],
+    "eslint/max-lines": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
+    "eslint/no-nested-ternary": "error",
+    "unicorn/no-nested-ternary": "off",
+    "react/jsx-max-depth": ["error", { "max": 6 }],
+    "react/no-unstable-nested-components": "error",
+    "react/react-in-jsx-scope": "off",
+    "oxc/no-accumulating-spread": "error"
+  }
+}

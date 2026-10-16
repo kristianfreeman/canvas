@@ -1,0 +1,78 @@
+included:
+  - Sources
+  - Tests
+  - Package.swift
+excluded:
+  - .build
+  - web
+
+strict: true
+
+opt_in_rules:
+  - closure_body_length
+  - cyclomatic_complexity
+  - discouraged_optional_boolean
+  - empty_count
+  - empty_string
+  - explicit_init
+  - fatal_error_message
+  - first_where
+  - force_unwrapping
+  - function_default_parameter_at_end
+  - implicitly_unwrapped_optional
+  - last_where
+  - legacy_multiple
+  - multiline_parameters
+  - prefer_self_in_static_references
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unavailable_function
+  - unneeded_parentheses_in_closure_argument
+  - unused_parameter
+  - vertical_whitespace_closing_braces
+  - yoda_condition
+
+cyclomatic_complexity:
+  warning: 6
+  error: 8
+  ignores_case_statements: false
+
+function_body_length:
+  warning: 30
+  error: 40
+
+closure_body_length:
+  warning: 20
+  error: 30
+
+type_body_length:
+  warning: 200
+  error: 250
+
+file_length:
+  warning: 300
+  error: 400
+  ignore_comment_only_lines: true
+
+function_parameter_count:
+  warning: 3
+  error: 4
+
+large_tuple:
+  warning: 2
+  error: 3
+
+nesting:
+  type_level: 1
+  function_level: 2
+
+line_length:
+  warning: 120
+  error: 140
+  ignores_comments: true
+  ignores_urls: true
+
+identifier_name:
+  min_length: 2
+  excluded: [x, y, id, fd, ok, rc]

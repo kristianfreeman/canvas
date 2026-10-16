@@ -1,0 +1,12 @@
+A resting panel comes back for a request with different data, showing the old data
+
+--- a/Sources/CanvasCore/PanelRest.swift
++++ b/Sources/CanvasCore/PanelRest.swift
+@@ -24,7 +24,6 @@
+             && resting.accent == new.accent
+             && resting.theme == new.theme
+             && resting.placement == new.placement
+-            && JSONValue(resting.data) == JSONValue(new.data)
+     }
+ }
+ 

@@ -1,0 +1,13 @@
+The pending-timer flag never clears, so a panel whose timeout already fired never rests
+
+--- a/Sources/CanvasApp/Native/JSThread.swift
++++ b/Sources/CanvasApp/Native/JSThread.swift
+@@ -7,7 +7,7 @@
+     private var runLoop: CFRunLoop?
+     private let started = DispatchSemaphore(value: 0)
+     private var timers: [Int: CFRunLoopTimer] = [:] {
+-        didSet { pending.withLock { $0 = !timers.isEmpty } }
++        didSet { pending.withLock { $0 = $0 || !timers.isEmpty } }
+     }
+     private let pending = OSAllocatedUnfairLock(initialState: false)
+     /// Whether a timer is scheduled. Any thread.

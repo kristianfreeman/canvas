@@ -1,0 +1,13 @@
+.build/
+.swiftpm/
+web/node_modules/
+web/dist/
+*.otf
+*.ttf
+*.woff
+*.woff2
+.DS_Store
+/tmp/
+dist/
+NOTES.md
+.cursor/rules/local.mdc

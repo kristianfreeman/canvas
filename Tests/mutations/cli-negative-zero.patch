@@ -1,0 +1,13 @@
+The CLI writes --at -0 as -0, which JSON parsers read as 0
+
+--- a/cli/opts.c
++++ b/cli/opts.c
+@@ -96,8 +96,4 @@
+     /* JSON parsers read "-0" as the integer 0; "-0.0" keeps the sign, which
+        --at needs for flush right or bottom. */
+-    if (v == 0 && signbit(v)) {
+-        buf_puts(b, "-0.0");
+-        return;
+-    }
+     if (fabs(v) >= 1e15 || v != floor(v)) {
+         format_fraction(v, b);

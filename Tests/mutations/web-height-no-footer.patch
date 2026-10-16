@@ -1,0 +1,11 @@
+The reported height leaves out the footer
+
+--- a/web/src/measure.ts
++++ b/web/src/measure.ts
+@@ -5,5 +5,5 @@
+ /** Natural size: header + the unconstrained content wrapper + footer, never the viewport, so the window resizing can't feed back into it. */
+ export function measureSurface() {
+-  const height = Math.ceil(partHeight('.cv-header') + partHeight('.cv-content') + partHeight('.cv-footer'))
++  const height = Math.ceil(partHeight('.cv-header') + partHeight('.cv-content'))
+   const width = Math.ceil(document.documentElement.getBoundingClientRect().width)
+ 

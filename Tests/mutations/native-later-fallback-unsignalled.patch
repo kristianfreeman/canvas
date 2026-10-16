@@ -1,0 +1,17 @@
+A tree that needs WebKit after an event shows an error instead of moving the panel to a page
+
+--- a/Sources/CanvasApp/Native/NativePanelContent+Messages.swift
++++ b/Sources/CanvasApp/Native/NativePanelContent+Messages.swift
+@@ -42,11 +42,7 @@
+     }
+ 
+     private func reportError(_ text: String, needsWeb: Bool) {
+-        if needsWeb {
+-            signalNeedsWeb()
+-        } else {
+-            delegate?.contentDidReportError(text)
+-        }
++        delegate?.contentDidReportError(text)
+     }
+ 
+     // MARK: NativeEvents

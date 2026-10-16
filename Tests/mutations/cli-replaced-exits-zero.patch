@@ -1,0 +1,11 @@
+The CLI treats replaced as success (exit 0) instead of 2
+
+--- a/cli/events.c
++++ b/cli/events.c
+@@ -17,5 +17,5 @@
+     } kinds[] = {
+         {"rendered", EV_RENDERED}, {"error", EV_ERROR},   {"result", EV_RESULT}, {"moved", EV_MOVED},
+-        {"closed", EV_CLOSED},     {"replaced", EV_CLOSED}, {"hidden", EV_DONE},   {"updated", EV_DONE},
++        {"closed", EV_CLOSED},     {"replaced", EV_DONE}, {"hidden", EV_DONE},   {"updated", EV_DONE},
+         {"ok", EV_DONE},           {"pong", EV_DONE},
+     };

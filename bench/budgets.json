@@ -1,0 +1,45 @@
+{
+  "_note": "Budgets at 1.3x the baseline in bench/baseline.json.",
+  "mem_idle": {
+    "mb": 60.7
+  },
+  "mem_one_panel": {
+    "mb": 124.9
+  },
+  "cli_help": {
+    "p50": 58.1,
+    "p95": 73.5
+  },
+  "cold_show": {
+    "p50": 487.6,
+    "p95": 515.0
+  },
+  "hide": {
+    "p50": 73.3,
+    "p95": 89.5
+  },
+  "ping": {
+    "p50": 64.9,
+    "p95": 78.9
+  },
+  "show_new": {
+    "p50": 322.7,
+    "p95": 347.8
+  },
+  "show_new_code": {
+    "p50": 1434.7,
+    "p95": 1456.7
+  },
+  "show_new_tsx": {
+    "p50": 330.9,
+    "p95": 342.0
+  },
+  "show_replace": {
+    "p50": 69.4,
+    "p95": 89.9
+  },
+  "toggle_pair": {
+    "p50": 427.1,
+    "p95": 471.4
+  }
+}

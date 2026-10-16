@@ -1,0 +1,10 @@
+DataCoalescer schedules a flush for every offer, not one per frame
+
+--- a/Sources/CanvasCore/DataCoalescer.swift
++++ b/Sources/CanvasCore/DataCoalescer.swift
+@@ -21,5 +21,4 @@
+     public mutating func offer(_ value: Value, now: UInt64) -> UInt64? {
+         pending = value
+-        guard !scheduled else { return nil }
+         scheduled = true
+         guard let lastFlush, now &- lastFlush < interval else { return 0 }

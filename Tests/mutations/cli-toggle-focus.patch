@@ -1,0 +1,11 @@
+toggle without --wait no longer focuses by default
+
+--- a/cli/show.c
++++ b/cli/show.c
+@@ -102,5 +102,5 @@
+         return o->focus == 1;
+     }
+-    return o->wait || strcmp(cmd, "toggle") == 0;
++    return o->wait && strcmp(cmd, "toggle") == 0;
+ }
+ 

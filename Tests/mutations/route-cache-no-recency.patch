@@ -1,0 +1,12 @@
+A route lookup doesn't count as a use, so the cache drops content still being shown
+
+--- a/Sources/CanvasCore/RouteCache.swift
++++ b/Sources/CanvasCore/RouteCache.swift
+@@ -27,7 +27,6 @@
+         guard let index = entries.firstIndex(where: { $0.key == key }), entries[index].source == hash else {
+             return .native
+         }
+-        entries.append(entries.remove(at: index))
+         return .web
+     }
+ 

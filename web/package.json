@@ -1,0 +1,33 @@
+{
+  "name": "canvas-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts",
+    "dev": "bun run build.ts && bun run serve.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "lint": "cd .. && web/node_modules/.bin/oxlint -c web/.oxlintrc.json --deny-warnings web examples"
+  },
+  "dependencies": {
+    "highlight.js": "^11.12.0",
+    "markdown-it": "^15.0.2",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "react": "19",
+    "react-dom": "19",
+    "react-reconciler": "0.34.0",
+    "shiki": "^4.5.0",
+    "sucrase": "^3.35.1"
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "1.88.0",
+    "@types/bun": "^1.4.3",
+    "@types/markdown-it": "^14.2.0",
+    "@types/react": "19",
+    "@types/react-dom": "19",
+    "@types/react-reconciler": "^0.34.0",
+    "oxlint": "1.88.0",
+    "typescript": "^7.0.2"
+  }
+}

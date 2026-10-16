@@ -1,0 +1,11 @@
+KeyChips treats → as a separator when only the key before it is a non-arrow
+
+--- a/Sources/CanvasCore/KeyChips.swift
++++ b/Sources/CanvasCore/KeyChips.swift
+@@ -62,5 +62,5 @@
+     static func isSeparator(_ token: String, previous: String?, next: String?) -> Bool {
+         guard token == "→", let previous, let next else { return false }
+-        return !arrows.contains(previous) && !arrows.contains(next)
++        return !arrows.contains(previous)
+     }
+ }

@@ -1,0 +1,10 @@
+The render payload leaves out the request's data
+
+--- a/Sources/CanvasCore/ShowRequest.swift
++++ b/Sources/CanvasCore/ShowRequest.swift
+@@ -51,5 +51,4 @@
+         var payload: [String: Any] = ["kind": kind, "source": source, "wait": wait]
+         if let title { payload["title"] = title }
+-        if let data { payload["data"] = data }
+         if let buttons { payload["buttons"] = buttons }
+         if let theme { payload["theme"] = theme.rawValue }

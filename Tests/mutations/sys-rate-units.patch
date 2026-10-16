@@ -1,0 +1,11 @@
+Counter.rate scales by a million instead of a billion (bytes per ms)
+
+--- a/Sources/CanvasCore/SysMath.swift
++++ b/Sources/CanvasCore/SysMath.swift
+@@ -69,5 +69,5 @@
+     /// Units per second for `delta` over `nanoseconds`.
+     public static func rate(_ delta: UInt64, nanoseconds: UInt64) -> Double {
+-        nanoseconds == 0 ? 0 : Double(delta) * 1_000_000_000 / Double(nanoseconds)
++        nanoseconds == 0 ? 0 : Double(delta) * 1_000_000 / Double(nanoseconds)
+     }
+ }
