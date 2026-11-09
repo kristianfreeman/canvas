@@ -445,6 +445,9 @@ one interval after the first subscribe.
 
 ## Changelog
 
+- **2026-11-09 (later):** `<img>` in a TSX page loads `file://` images from
+  anywhere the user can read. Before, the web view could read only the
+  renderer's own folder, so these images came up blank.
 - **2026-11-09:** the server reloads `hotkey` from config.toml when the file
   changes, with no restart. A shortcut that another app also holds is no
   longer described as an error: macOS sends it to both.

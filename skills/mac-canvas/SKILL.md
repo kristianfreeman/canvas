@@ -201,7 +201,7 @@ Props and their types are in `web/canvas.d.ts` in the Canvas checkout. This skil
 
 Kit `color` props take a semantic name (`accent`, `success`, `warning`, `danger`, `info`, `muted`), an Apple system hue (`red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `pink`, `gray`) or any CSS color. In your own styles, use the theme's CSS variables, such as `var(--accent)`, `var(--fg-muted)`, `var(--border)` and `var(--green)`, so the page works in both light and dark mode.
 
-Pages have no network: no fetch, no remote images or fonts. Local `file://` images work.
+Pages have no network: no fetch, no remote images or fonts. In TSX, `<img src="file:///…">` shows any local image the user can read, including paths with percent-encoded spaces and a query string; it moves the panel to the WebKit renderer. Markdown panels don't show images, only their alt text.
 
 ## When not to use it
 

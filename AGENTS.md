@@ -85,7 +85,8 @@ WebKit page renders only TSX that uses raw DOM or CSS.
   or `canvas-send` from `cli/canvas-send.zsh` in a running zsh.
 - **Security:** TSX runs arbitrary JS. The page has CSP `connect-src 'none'`,
   the webview never navigates, and only http, https and mailto links open, in
-  the default browser.
+  the default browser. The web view may read any file the user can, so
+  `<img src="file://…">` works anywhere on disk; the CSP keeps fetch out.
 
 ## CLI and page contracts
 

@@ -99,7 +99,10 @@ final class WebPage: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKU
 
     func load() {
         loadStarted = Clock.now()
-        webView.loadFileURL(indexURL, allowingReadAccessTo: indexURL.deletingLastPathComponent())
+        // Read access to the whole disk, not just the renderer's folder, so
+        // `<img src="file://…">` works for images anywhere the user can read.
+        // The CSP still blocks fetch and every network request.
+        webView.loadFileURL(indexURL, allowingReadAccessTo: URL(fileURLWithPath: "/"))
     }
 
     /// Runs `body` as an async function in the page, once it has loaded.

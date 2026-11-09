@@ -1,0 +1,13 @@
+The web view reads only the renderer's folder, so file:// images elsewhere come up blank
+
+--- a/Sources/CanvasApp/WebPage.swift
++++ b/Sources/CanvasApp/WebPage.swift
+@@ -102,7 +102,7 @@
+         // Read access to the whole disk, not just the renderer's folder, so
+         // `<img src="file://…">` works for images anywhere the user can read.
+         // The CSP still blocks fetch and every network request.
+-        webView.loadFileURL(indexURL, allowingReadAccessTo: URL(fileURLWithPath: "/"))
++        webView.loadFileURL(indexURL, allowingReadAccessTo: indexURL.deletingLastPathComponent())
+     }
+ 
+     /// Runs `body` as an async function in the page, once it has loaded.
