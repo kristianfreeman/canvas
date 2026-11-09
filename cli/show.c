@@ -158,4 +158,13 @@ static int show_like(const char *cmd, Args *a) {
 
 int cmd_show(Args *a) { return show_like("show", a); }
 
-int cmd_toggle(Args *a) { return show_like("toggle", a); }
+static bool asks_all(const Args *a) {
+    for (int i = a->i; i < a->argc; i++) {
+        if (strcmp(a->argv[i], "--all") == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int cmd_toggle(Args *a) { return asks_all(a) ? toggle_all(a) : show_like("toggle", a); }

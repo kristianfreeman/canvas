@@ -7,18 +7,21 @@ public struct PubRequest {
     public let op: ChannelOp
     public let keep: Int?
     public let stream: Bool
+    public let persist: Bool
     public let value: Any?
 
     public init(_ json: [String: Any]) throws(ChannelError) {
         guard let channel = json["channel"] as? String else { throw ChannelError("pub needs a channel") }
         guard let op = ChannelOp(rawValue: json["op"] as? String ?? ChannelOp.set.rawValue) else {
-            throw ChannelError("op must be set or merge")
+            throw ChannelError("op must be set, merge or clear")
         }
         let keep = try Self.keep(json["keep"])
         try ChannelStore.validate(channel, keep: keep)
         stream = json["stream"] as? Bool ?? false
+        persist = json["persist"] as? Bool ?? false
         value = json["value"]
-        if !stream, value == nil { throw ChannelError("pub needs a value") }
+        if op == .clear, stream || value != nil { throw ChannelError("clear takes no value") }
+        if !stream, value == nil, op != .clear { throw ChannelError("pub needs a value") }
         self.channel = channel
         self.op = op
         self.keep = keep
@@ -36,7 +39,7 @@ public struct PubRequest {
     /// The message for `value`. A stream resizes the history once, with its
     /// first value.
     public func message(_ value: Any, first: Bool = true) -> ChannelMessage {
-        ChannelMessage(channel: channel, value: value, op: op, keep: first ? keep : nil)
+        ChannelMessage(channel: channel, value: value, op: op, keep: first ? keep : nil, persist: persist)
     }
 }
 

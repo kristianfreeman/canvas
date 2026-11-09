@@ -1,0 +1,12 @@
+The config watcher keeps its first watches, so it goes blind after an atomic save replaces the file
+
+--- a/Sources/CanvasApp/ConfigWatcher.swift
++++ b/Sources/CanvasApp/ConfigWatcher.swift
+@@ -58,7 +58,6 @@
+         debounce?.cancel()
+         let item = DispatchWorkItem { [weak self] in
+             guard let self, !self.stopped else { return }
+-            self.arm()
+             let text = self.read()
+             guard text != self.last else { return }
+             self.last = text

@@ -119,8 +119,13 @@ function lateFallback() {
   post({ type: 'error', message: fallback.message, needsWeb: true })
 }
 
+/** A task checkbox of a Markdown panel: Swift writes the change to the source (docs/native.md, Messages). */
+function postTask({ line, checked }: { line: number; checked: boolean }) {
+  post({ type: 'task', line, checked })
+}
+
 function content({ payload, content: exported }: Shown) {
-  if (payload.kind === 'markdown') return createElement(Markdown, { source: payload.source })
+  if (payload.kind === 'markdown') return createElement(Markdown, { source: payload.source, onToggle: postTask })
 
   return isValidElement(exported) ? exported : createElement(exported as ComponentType<{ data: unknown }>, { data: payload.data })
 }

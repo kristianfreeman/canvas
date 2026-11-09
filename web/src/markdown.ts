@@ -23,6 +23,26 @@ md.renderer.rules.footnote_caption = (tokens, idx) => {
 
 md.renderer.rules.code_block = (tokens, idx) => codeBlockHtml(tokens[idx].content)
 
-export function renderMarkdown(source: string): string {
-  return md.render(source)
+/** Each list item carries the source line it starts on, from 0, so a task click can name it. */
+md.core.ruler.push('canvas_item_lines', (state) => {
+  for (const token of state.tokens) {
+    if (token.type === 'list_item_open' && token.map) token.attrSet('data-line', String(token.map[0]))
+  }
+})
+
+/** `interactive` leaves task checkboxes enabled, for Markdown whose tasks can be checked. */
+export function renderMarkdown(source: string, { interactive = false } = {}): string {
+  const html = md.render(source)
+
+  return interactive ? html.replace(/(<input class="task-list-item-checkbox"[^>]*?) disabled=""/g, '$1') : html
+}
+
+export type TaskToggle = { line: number; checked: boolean }
+
+/** The task a checkbox change inside rendered Markdown is about, or null for any other change. */
+export function taskChange(target: EventTarget | null): TaskToggle | null {
+  if (!(target instanceof HTMLInputElement) || !target.classList.contains('task-list-item-checkbox')) return null
+  const line = Number(target.closest('li[data-line]')?.getAttribute('data-line'))
+
+  return Number.isInteger(line) && line >= 0 ? { line, checked: target.checked } : null
 }

@@ -18,6 +18,10 @@ int cmd_list(Args *a);
 int cmd_ping(Args *a);
 int cmd_pub(Args *a);
 int cmd_sub(Args *a);
+int cmd_get(Args *a);
+int cmd_hotkeys(Args *a);
+/* `toggle --all`: the rest of the arguments may only be --all and --emit. */
+int toggle_all(Args *a);
 int cmd_help(Args *a);
 
 /* The help text to fd. */

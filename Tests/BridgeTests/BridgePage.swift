@@ -93,7 +93,7 @@ final class BridgePage: PanelContentDelegate {
         ChannelHub.shared.unsubscribe(page, channel: channel)
     }
 
-    func contentDidPublish(channel: String, value: Any) {
+    func contentDidPublish(channel: String, value: Any, persist _: Bool) {
         published.append((channel, value))
         try? ChannelHub.shared.publish(ChannelMessage(channel: channel, value: value))
     }

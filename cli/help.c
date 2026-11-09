@@ -2,21 +2,27 @@
 #include "commands.h"
 #include "util.h"
 
-static const char help_text[] =
+static const char help_usage[] =
     "usage:\n"
     "  canvas show [FILE | -] [options]             render, return once rendered\n"
     "  canvas toggle [FILE | -] [options]           hide if --id is visible, else show\n"
+    "  canvas toggle --all                          hide every shown panel, or bring back\n"
+    "                                               the hidden ones (the global hotkey)\n"
     "  canvas update --id ID (--data D | --stream)  replace an open canvas's data\n"
     "  canvas move --id ID [placement options]      reposition an open canvas\n"
     "  canvas hide [--id ID | --all]\n"
     "  canvas list                                  one JSON object per visible panel\n"
-    "  canvas pub CHANNEL [VALUE | -] [--merge] [--keep N] [--every DUR -- CMD ARGS...]\n"
+    "  canvas pub CHANNEL [VALUE | -] [--merge] [--persist] [--keep N] [--every DUR -- CMD...]\n"
     "  canvas sub CHANNEL... [--history]            NDJSON on stdout until killed\n"
+    "  canvas get CHANNEL                           print a channel's latest value\n"
+    "  canvas hotkeys                               one JSON object per hotkey\n"
     "  canvas ping                                  exit 0 if the server is up\n"
     "  canvas help\n"
     "  --emit on any of these but sub, pub - and pub --every prints the request\n"
     "  line instead of sending it\n"
-    "\n"
+    "\n";
+
+static const char help_content[] =
     "content options (show, toggle):\n"
     "  FILE | -               a file, watched and re-rendered when it changes; - (or a\n"
     "                         non-TTY stdin with no FILE) reads the source from stdin\n"
@@ -34,6 +40,8 @@ static const char help_text[] =
     "  --focus | --no-focus   default: on for --wait and toggle, off otherwise\n"
     "  --timeout SECONDS      with --wait: hide the panel and exit 3 when it runs out\n"
     "  --trace                print stage timings to stderr as one JSON line\n"
+    "  --hotkey KEYS          a global hotkey like ctrl+opt+t that hides and shows this\n"
+    "                         id, and shows it again once closed; none removes it\n"
     "  --emit                 print the request line instead of sending it; replay it\n"
     "                         with canvas-send from cli/canvas-send.zsh, which needs no exec\n"
     "\n"
@@ -56,7 +64,9 @@ static const char help_text[] =
     "  --opacity F            0.0 to 1.0, default 1\n"
     "  --stack GROUP          stack panels of a group in their corner\n"
     "  --forget               ignore and clear this id's remembered frame\n"
-    "\n"
+    "\n";
+
+static const char help_channels[] =
     "channels:\n"
     "  pub CHANNEL VALUE      publish one JSON value (same JSON-or-file rule as --data)\n"
     "  pub CHANNEL -          each stdin line is one message; exits 0 on EOF\n"
@@ -64,6 +74,8 @@ static const char help_text[] =
     "                         run CMD every DUR (500ms, 1s, 2.5m) and publish its stdout\n"
     "  --merge                apply VALUE as a JSON merge patch (RFC 7386)\n"
     "  --keep N               history capacity, default 120, 0 turns it off\n"
+    "  --persist              keep the channel's latest value across server restarts\n"
+    "  pub CHANNEL --clear    delete the channel's value, history and persistence\n"
     "  sub CHANNEL...         one line per message: the bare value for one channel,\n"
     "                         {\"channel\",\"value\"} for several\n"
     "  --history              print the buffered history first\n"
@@ -71,7 +83,11 @@ static const char help_text[] =
     "\n"
     "exit codes: 0 ok, 1 error, 2 closed or replaced, 3 timed out, 64 usage\n";
 
-void help_write(int fd) { (void)write_all(fd, help_text, sizeof help_text - 1); }
+void help_write(int fd) {
+    (void)write_all(fd, help_usage, sizeof help_usage - 1);
+    (void)write_all(fd, help_content, sizeof help_content - 1);
+    (void)write_all(fd, help_channels, sizeof help_channels - 1);
+}
 
 int cmd_help(Args *a) {
     (void)a;

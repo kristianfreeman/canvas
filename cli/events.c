@@ -17,7 +17,7 @@ static EventKind event_kind(Span name) {
     } kinds[] = {
         {"rendered", EV_RENDERED}, {"error", EV_ERROR},   {"result", EV_RESULT}, {"moved", EV_MOVED},
         {"closed", EV_CLOSED},     {"replaced", EV_CLOSED}, {"hidden", EV_DONE},   {"updated", EV_DONE},
-        {"ok", EV_DONE},           {"pong", EV_DONE},
+        {"ok", EV_DONE},           {"pong", EV_DONE},     {"shown", EV_DONE},    {"value", EV_RESULT},
     };
     for (size_t i = 0; i < sizeof kinds / sizeof kinds[0]; i++) {
         if (span_eq(name, kinds[i].name)) {

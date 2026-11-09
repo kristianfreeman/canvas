@@ -12,10 +12,10 @@ extension PanelController {
         ChannelHub.shared.unsubscribe(content, channel: channel)
     }
 
-    func contentDidPublish(channel: String, value: Any) {
+    func contentDidPublish(channel: String, value: Any, persist: Bool) {
         guard isOpen else { return }
         do {
-            try ChannelHub.shared.publish(ChannelMessage(channel: channel, value: value))
+            try ChannelHub.shared.publish(ChannelMessage(channel: channel, value: value, persist: persist))
         } catch {
             content.consoleError("[canvas] publish: \(error.description)")
         }

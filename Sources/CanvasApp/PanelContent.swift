@@ -19,7 +19,22 @@ protocol PanelContentDelegate: AnyObject {
     /// `every` is in milliseconds, for `canvas.sys.*`.
     func contentDidSubscribe(channel: String, every: Int?)
     func contentDidUnsubscribe(channel: String)
-    func contentDidPublish(channel: String, value: Any)
+    func contentDidPublish(channel: String, value: Any, persist: Bool)
+    /// A task checkbox in a Markdown panel was clicked.
+    func contentDidToggleTask(line: Int, checked: Bool)
+}
+
+/// The `task` message's body: `{line, checked}`.
+struct TaskClick {
+    let line: Int
+    let checked: Bool
+
+    init?(_ body: [String: Any]) {
+        guard let line = (body["line"] as? NSNumber)?.intValue, line >= 0,
+              let checked = (body["checked"] as? NSNumber)?.boolValue else { return nil }
+        self.line = line
+        self.checked = checked
+    }
 }
 
 extension PanelContentDelegate {
@@ -27,6 +42,7 @@ extension PanelContentDelegate {
     func contentDidPaint() {}
     func contentDidRequestEscapeClose() { contentDidRequestClose() }
     func contentNeedsWeb() {}
+    func contentDidToggleTask(line _: Int, checked _: Bool) {}
 }
 
 /// What a render returned. Times are `Clock` nanoseconds.

@@ -2,6 +2,9 @@ import Foundation
 
 public enum ChannelOp: String {
     case set, merge
+    /// Removes the channel's value, history and persistence. Subscribers
+    /// aren't told; they keep the value they have.
+    case clear
 }
 
 /// One `pub`: a value for a channel, how to apply it, and optionally a new
@@ -11,12 +14,15 @@ public struct ChannelMessage {
     public var value: Any
     public var op: ChannelOp
     public var keep: Int?
+    /// Keep the channel's latest value across server restarts, from now on.
+    public var persist: Bool
 
-    public init(channel: String, value: Any, op: ChannelOp = .set, keep: Int? = nil) {
+    public init(channel: String, value: Any, op: ChannelOp = .set, keep: Int? = nil, persist: Bool = false) {
         self.channel = channel
         self.value = value
         self.op = op
         self.keep = keep
+        self.persist = persist
     }
 }
 
@@ -56,6 +62,7 @@ public final class ChannelStore {
     }
 
     private var channels: [String: Channel] = [:]
+    private var persisted: Set<String> = []
     private var subscribers: [String: [Int: Subscriber]] = [:]
     private var nextToken = 0
 
@@ -92,6 +99,11 @@ public final class ChannelStore {
     @discardableResult
     public func publish(_ message: ChannelMessage, from publisher: Publisher = .external) throws(ChannelError) -> Any {
         try Self.validate(message.channel, keep: message.keep, from: publisher)
+        if message.op == .clear {
+            clear(message.channel)
+            return NSNull()
+        }
+        if message.persist { persisted.insert(message.channel) }
         let current = channels[message.channel]
         var channel = current ?? Channel(latest: NSNull(), history: History(capacity: Self.defaultCapacity))
         if let keep = message.keep { channel.history.resize(keep) }
@@ -109,6 +121,32 @@ public final class ChannelStore {
         guard let listeners = subscribers[update.channel] else { return }
         for token in listeners.keys.sorted() {
             listeners[token]?(update)
+        }
+    }
+
+    private func clear(_ channel: String) {
+        channels[channel] = nil
+        persisted.remove(channel)
+    }
+
+    public func isPersisted(_ channel: String) -> Bool {
+        persisted.contains(channel)
+    }
+
+    /// The latest value of every persisted channel.
+    public var persistedValues: [String: Any] {
+        Dictionary(uniqueKeysWithValues: persisted.compactMap { name in channels[name].map { (name, $0.latest) } })
+    }
+
+    /// Puts back saved values as persisted channels, each with a history of
+    /// one. Names that aren't valid or are reserved are skipped. Nobody is
+    /// notified; this runs before anything subscribes.
+    public func restore(_ values: [String: Any]) {
+        for (name, value) in values where Self.isValidName(name) && !Self.isReserved(name) {
+            var history = History<Any>(capacity: Self.defaultCapacity)
+            history.append(value)
+            channels[name] = Channel(latest: value, history: history)
+            persisted.insert(name)
         }
     }
 

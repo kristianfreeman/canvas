@@ -2,7 +2,7 @@ import AppKit
 import CanvasCore
 
 enum WireCommand: String {
-    case ping, list, hide, show, toggle, update, eval, trace, move, pub, sub
+    case ping, list, hide, show, toggle, update, eval, trace, move, pub, sub, get, hotkeys
 }
 
 final class Server {
@@ -11,6 +11,10 @@ final class Server {
     var resting = RestShelf<PanelController>(capacity: PanelRest.capacity)
     let hosts: HostPools
     let traces = TraceLog()
+    /// Panel hotkeys, saved in `hotkeys.json`.
+    var bindings = HotkeyBindings()
+    /// `hotkey` in config.toml, once registered.
+    var globalHotkey: Hotkey?
     /// `eval` runs only in a server started with `CANVAS_TEST=1`.
     let testMode = ProcessInfo.processInfo.environment["CANVAS_TEST"] == "1"
     private var listener: Listener?
@@ -116,18 +120,28 @@ final class Server {
         .list: { server, _, client in server.list(client) },
         .hide: { server, json, client in server.hide(json, client) },
         .show: { server, json, client in server.show(json, command: .show, client) },
-        .toggle: { server, json, client in server.show(json, command: .toggle, client) },
+        .toggle: { server, json, client in
+            if json["all"] as? Bool == true {
+                server.toggleAll(client)
+            } else {
+                server.show(json, command: .toggle, client)
+            }
+        },
         .update: { server, json, client in server.update(json, client) },
         .eval: { server, json, client in server.evaluate(json, client) },
         .move: { server, json, client in server.move(json, client) },
         .pub: { server, json, client in server.publish(json, client) },
         .sub: { server, json, client in server.subscribe(json, client) },
+        .get: { server, json, client in server.read(json, client) },
+        .hotkeys: { server, _, client in server.listHotkeys(client) },
         .trace: { server, _, client in client.reply(["event": "trace", "stages": server.traces.json]) }
     ]
 
     private func list(_ client: Client) {
         for panel in panels.values.sorted(by: { $0.created < $1.created }) where panel.isOpen {
-            client.send(panel.listing)
+            var entry = panel.listing
+            entry["hotkey"] = bindings.byID[panel.id]?.hotkey.description ?? NSNull()
+            client.send(entry)
         }
         client.finish()
     }

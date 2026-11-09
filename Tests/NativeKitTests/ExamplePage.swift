@@ -59,7 +59,8 @@ enum ExampleCases {
         var pushes: [[String: Any]] = []
     }
 
-    static let names = ["approve", "dashboard", "deploy", "keys", "keys-empty", "live", "top", "top-waiting", "hello"]
+    static let names = ["approve", "dashboard", "deploy", "keys", "keys-empty", "live", "top", "top-waiting", "hello",
+                        "todo", "todo-empty", "todo-md"]
 
     static func source(_ file: String) throws -> String {
         try String(contentsOf: Repo.examples.appendingPathComponent(file), encoding: .utf8)
@@ -86,7 +87,15 @@ enum ExampleCases {
         ]) },
         "top": { Case(file: "top.tsx", pushes: SysSample.batch) },
         "top-waiting": { Case(file: "top.tsx") },
-        "hello": { Case(file: "hello.md") }
+        "hello": { Case(file: "hello.md") },
+        "todo": { Case(file: "todo.tsx", pushes: [["channel": "todo.items", "value": todoItems]]) },
+        "todo-empty": { Case(file: "todo.tsx") },
+        "todo-md": { Case(file: "todo.md") }
+    ]
+
+    static let todoItems: [[String: Any]] = [
+        ["text": "Review the deploy plan", "done": false], ["text": "Reply to the design thread", "done": true],
+        ["text": "Book the room for the retro", "done": false]
     ]
 
     static let plan: [String: Any] = [

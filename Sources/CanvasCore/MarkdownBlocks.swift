@@ -46,11 +46,14 @@ public struct MarkdownListItem: Equatable {
     public let task: Bool
     public let checked: Bool
     public let blocks: [MarkdownBlock]
+    /// The source line the item starts on, from 0, for checking a task.
+    public let line: Int?
 
-    public init(task: Bool, checked: Bool, blocks: [MarkdownBlock]) {
+    public init(task: Bool, checked: Bool, blocks: [MarkdownBlock], line: Int? = nil) {
         self.task = task
         self.checked = checked
         self.blocks = blocks
+        self.line = line
     }
 }
 
@@ -136,7 +139,7 @@ public enum MarkdownBlocks {
     private static func list(_ value: JSONValue) -> MarkdownList {
         let items = (value["items"]?.array ?? []).map { item in
             MarkdownListItem(task: item["task"]?.isTrue == true, checked: item["checked"]?.isTrue == true,
-                             blocks: decode(item["blocks"]))
+                             blocks: decode(item["blocks"]), line: line(item["line"]))
         }
         return MarkdownList(ordered: value["ordered"]?.isTrue == true,
                             start: int(value["start"], 1), items: items)
@@ -176,6 +179,12 @@ public enum MarkdownBlocks {
     static func int(_ value: JSONValue?, _ fallback: Int) -> Int {
         guard let number = value?.number, number.isFinite, abs(number) < 1e9 else { return fallback }
         return Int(number)
+    }
+
+    /// A source line: a whole number from 0, else nil.
+    private static func line(_ value: JSONValue?) -> Int? {
+        let number = int(value, -1)
+        return number >= 0 ? number : nil
     }
 
     private static func identifier(_ value: JSONValue?) -> String {

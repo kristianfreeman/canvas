@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
 import { createChannelStore, isReservedChannel, type SubscribeOptions } from '../../src/channels'
+import { createUseStore } from '../../src/useStore'
 import { post, toJSONValue } from '../post'
 
 export const channelStore = createChannelStore(post)
@@ -28,12 +29,16 @@ export function useSeries<T = unknown>(name: string, size = 120): T[] {
   return useMemo(() => (entry ? entry.history.slice(-count) : EMPTY) as T[], [entry, count])
 }
 
-export function publish(name: string, value: unknown) {
+export function publish(name: string, value: unknown, options?: { persist?: boolean }) {
   if (typeof name !== 'string' || !name || isReservedChannel(name)) {
     console.error(`[canvas] publish: '${String(name)}' is not a channel the page can publish to (canvas.* is reserved)`)
 
     return
   }
 
-  post({ type: 'publish', channel: name, value: toJSONValue(value) })
+  const message = { type: 'publish', channel: name, value: toJSONValue(value) } as const
+
+  post(options?.persist ? { ...message, persist: true } : message)
 }
+
+export const useStore = createUseStore({ useChannel, publish })

@@ -8,7 +8,8 @@ export type Outgoing =
   | { type: 'result'; value: unknown }
   | { type: 'close'; reason?: 'escape' }
   | { type: 'open'; url: string }
-  | { type: 'publish'; channel: string; value: unknown }
+  | { type: 'publish'; channel: string; value: unknown; persist?: true }
+  | { type: 'task'; line: number; checked: boolean }
   | ChannelRequest
 
 type Handler = { postMessage(message: unknown): void }

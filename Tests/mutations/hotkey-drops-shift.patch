@@ -1,0 +1,13 @@
+Shift is left out of the registered hotkey, so ctrl+shift+t fires on ctrl+t
+
+--- a/Sources/CanvasCore/Hotkey.swift
++++ b/Sources/CanvasCore/Hotkey.swift
+@@ -63,7 +63,7 @@
+ 
+     /// Carbon's modifier mask for `RegisterEventHotKey`.
+     public var carbonModifiers: UInt32 {
+-        let masks: [(Modifiers, UInt32)] = [(.command, 0x100), (.shift, 0x200), (.option, 0x800), (.control, 0x1000)]
++        let masks: [(Modifiers, UInt32)] = [(.command, 0x100), (.shift, 0), (.option, 0x800), (.control, 0x1000)]
+         return masks.filter { modifiers.contains($0.0) }.reduce(0) { $0 | $1.1 }
+     }
+ }

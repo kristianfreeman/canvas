@@ -16,7 +16,8 @@ typedef struct {
 static const Command commands[] = {
     {"show", cmd_show}, {"toggle", cmd_toggle}, {"update", cmd_update}, {"move", cmd_move},
     {"hide", cmd_hide}, {"list", cmd_list},     {"pub", cmd_pub},       {"sub", cmd_sub},
-    {"ping", cmd_ping}, {"help", cmd_help},     {"--help", cmd_help},   {"-h", cmd_help},
+    {"get", cmd_get},   {"hotkeys", cmd_hotkeys}, {"ping", cmd_ping},   {"help", cmd_help},
+    {"--help", cmd_help}, {"-h", cmd_help},
 };
 
 int main(int argc, char **argv) {

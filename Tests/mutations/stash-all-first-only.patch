@@ -1,0 +1,13 @@
+toggle --all hides only the oldest shown panel
+
+--- a/Sources/CanvasCore/PanelStash.swift
++++ b/Sources/CanvasCore/PanelStash.swift
+@@ -16,7 +16,7 @@
+     /// when none is shown, bring back every stashed one.
+     public static func toggleAll<ID>(_ panels: [(id: ID, state: State)]) -> (action: Action, ids: [ID]) {
+         let shown = panels.filter { $0.state == .shown }.map(\.id)
+-        if !shown.isEmpty { return (.stash, shown) }
++        if !shown.isEmpty { return (.stash, Array(shown.prefix(1))) }
+         return (.unstash, panels.filter { $0.state == .stashed }.map(\.id))
+     }
+ 

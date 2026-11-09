@@ -106,7 +106,9 @@ import TestSupport
         MainActor.assumeIsolated { ChannelHub.shared.unsubscribe(content, channel: channel) }
     }
 
-    nonisolated func contentDidPublish(channel: String, value: Any) {
-        MainActor.assumeIsolated { _ = try? ChannelHub.shared.publish(ChannelMessage(channel: channel, value: value)) }
+    nonisolated func contentDidPublish(channel: String, value: Any, persist: Bool) {
+        MainActor.assumeIsolated {
+            _ = try? ChannelHub.shared.publish(ChannelMessage(channel: channel, value: value, persist: persist))
+        }
     }
 }

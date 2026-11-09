@@ -22,6 +22,8 @@ public struct ShowRequest {
     public var accent: String?
     public var theme: PanelTheme?
     public var placement: Placement
+    /// `--hotkey`: bind a hotkey that toggles this id, or remove its binding.
+    public var hotkey: HotkeyChange?
 
     public init(_ json: [String: Any]) throws(RequestError) {
         guard let source = json["source"] as? String else { throw RequestError("missing source") }
@@ -39,6 +41,7 @@ public struct ShowRequest {
         accent = (json["accent"] as? String).flatMap { $0.isEmpty ? nil : $0 }
         theme = (json["theme"] as? String).flatMap(PanelTheme.init(rawValue:))
         placement = try Placement(json: json)
+        hotkey = try HotkeyChange(json["hotkey"])
     }
 
     /// The panel id a request names, `default` when absent or empty.
@@ -55,6 +58,27 @@ public struct ShowRequest {
         if let theme { payload["theme"] = theme.rawValue }
         if let accent { payload["accent"] = accent }
         return payload
+    }
+}
+
+/// What a show request's `hotkey` asks for.
+public enum HotkeyChange: Equatable {
+    case bind(Hotkey)
+    /// `"none"`.
+    case unbind
+
+    init?(_ raw: Any?) throws(RequestError) {
+        guard let raw, !(raw is NSNull) else { return nil }
+        guard let text = raw as? String else { throw RequestError("hotkey must be a string") }
+        if text.lowercased() == "none" {
+            self = .unbind
+            return
+        }
+        do {
+            self = .bind(try Hotkey(parsing: text))
+        } catch {
+            throw RequestError(error.description)
+        }
     }
 }
 

@@ -317,6 +317,14 @@ static void apply_buttons(Opts *o, const Opt *spec, const char *value) {
     opts_set_buf(o, spec->key, &b);
 }
 
+/* The server parses the key names; only an empty value is caught here. */
+static void apply_hotkey(Opts *o, const Opt *spec, const char *value) {
+    if (value[0] == '\0') {
+        usage_fail("--hotkey needs keys like ctrl+opt+t, or none");
+    }
+    opts_set_str(o, spec->key, value);
+}
+
 /* ---- tables ---- */
 
 #define VALUE(flag, key, fn) {flag, key, fn, NULL, RANGE_ANY, true}
@@ -339,6 +347,7 @@ const Opt content_opts[] = {
     SWITCH("--no-focus", NULL, apply_focus),
     RANGED("--timeout", NULL, apply_timeout, RANGE_POSITIVE),
     SWITCH("--trace", "trace", apply_trace),
+    VALUE("--hotkey", "hotkey", apply_hotkey),
     SWITCH("--emit", NULL, apply_emit),
     END,
 };

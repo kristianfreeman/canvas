@@ -54,7 +54,7 @@ function prepare(input: Payload | string): Prepared {
     const content: Content =
       payload.kind === 'tsx'
         ? { kind: 'tsx', component: evaluateTsx(payload.source) }
-        : { kind: 'markdown', html: renderMarkdown(payload.source) }
+        : { kind: 'markdown', html: renderMarkdown(payload.source, { interactive: true }) }
 
     return { payload, content }
   } catch (failure) {

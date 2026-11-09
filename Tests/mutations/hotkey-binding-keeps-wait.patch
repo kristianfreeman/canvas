@@ -1,0 +1,13 @@
+A hotkey binding keeps the --wait of the show that made it, so a press shows a panel nobody waits on as waiting
+
+--- a/Sources/CanvasCore/HotkeyBindings.swift
++++ b/Sources/CanvasCore/HotkeyBindings.swift
+@@ -9,7 +9,7 @@
+     /// call (`cmd`, `wait`, `stream`, `focus`, `trace`, `hotkey`).
+     public let request: [String: Any]
+ 
+-    static let callFields: Set<String> = ["cmd", "wait", "stream", "focus", "trace", "hotkey", "forget"]
++    static let callFields: Set<String> = ["cmd", "stream", "focus", "trace", "hotkey", "forget"]
+ 
+     public init(id: String, hotkey: Hotkey, request: [String: Any]) {
+         self.id = id

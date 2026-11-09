@@ -1,6 +1,6 @@
 import { createElement, useMemo, type ReactNode } from 'react'
 import { codeBlockHtml } from '../highlight'
-import { renderMarkdown } from '../markdown'
+import { renderMarkdown, taskChange, type TaskToggle } from '../markdown'
 import { cx, resolveColor, type Styled } from './util'
 
 type HeadingProps = Styled & { level?: 1 | 2 | 3 | 4; children?: ReactNode }
@@ -60,13 +60,26 @@ export function CodeBlock({ code, lang, className, style, children }: CodeBlockP
   return <div className={cx('cv-codeblock-host', className)} style={style} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-type MarkdownProps = Styled & { source?: string; children?: ReactNode }
+type MarkdownProps = Styled & { source?: string; children?: ReactNode; onToggle?: (task: TaskToggle) => void }
 
-export function Markdown({ source, className, style, children }: MarkdownProps) {
+export function Markdown({ source, className, style, children, onToggle }: MarkdownProps) {
   const text = source ?? childText(children)
-  const html = useMemo(() => renderMarkdown(text), [text])
+  const interactive = Boolean(onToggle)
+  const html = useMemo(() => renderMarkdown(text, { interactive }), [text, interactive])
+  const onChange = (event: { target: EventTarget | null }) => {
+    const task = taskChange(event.target)
 
-  return <div className={cx('cv-prose', className)} style={style} dangerouslySetInnerHTML={{ __html: html }} />
+    if (task) onToggle?.(task)
+  }
+
+  return (
+    <div
+      className={cx('cv-prose', className)}
+      style={style}
+      onChange={interactive ? onChange : undefined}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
 }
 
 export function Kbd({ tone, className, style, children }: Styled & { tone?: 'accent'; children?: ReactNode }) {

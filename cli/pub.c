@@ -20,6 +20,8 @@ typedef struct {
     unsigned long keep;
     bool has_keep;
     bool merge;
+    bool persist;
+    bool clear;
     bool has_every;
 } Pub;
 
@@ -57,6 +59,10 @@ static unsigned long keep_value(const char *text) {
 static void pub_flag(Pub *p, Args *a, const char *arg) {
     if (strcmp(arg, "--merge") == 0) {
         p->merge = true;
+    } else if (strcmp(arg, "--persist") == 0) {
+        p->persist = true;
+    } else if (strcmp(arg, "--clear") == 0) {
+        p->clear = true;
     } else if (strcmp(arg, "--emit") == 0) {
         conn_emit_only();
     } else if (strcmp(arg, "--keep") == 0) {
@@ -105,8 +111,18 @@ static void check_channel(const char *channel) {
     }
 }
 
+static void check_clear(const Pub *p) {
+    if (p->value != NULL || p->has_every || p->cmd != NULL || p->merge || p->persist || p->has_keep) {
+        usage_fail("--clear takes only a CHANNEL");
+    }
+}
+
 static void check_pub(const Pub *p) {
     check_channel(p->channel);
+    if (p->clear) {
+        check_clear(p);
+        return;
+    }
     if (!p->has_every && p->cmd != NULL) {
         usage_fail("a command after -- needs --every");
     }
@@ -127,9 +143,13 @@ static void pub_header(const Pub *p, Buf *req) {
     buf_puts(req, "{\"cmd\":\"pub\"");
     json_key(req, "channel");
     json_cstr(req, p->channel);
-    if (p->merge) {
+    if (p->merge || p->clear) {
         json_key(req, "op");
-        buf_puts(req, "\"merge\"");
+        buf_puts(req, p->clear ? "\"clear\"" : "\"merge\"");
+    }
+    if (p->persist) {
+        json_key(req, "persist");
+        buf_puts(req, "true");
     }
     if (p->has_keep) {
         char num[24];
@@ -140,8 +160,10 @@ static void pub_header(const Pub *p, Buf *req) {
 }
 
 static int pub_once(Buf *req, const char *value) {
-    json_key(req, "value");
-    load_json_arg(value, "VALUE", req);
+    if (value != NULL) {
+        json_key(req, "value");
+        load_json_arg(value, "VALUE", req);
+    }
     buf_puts(req, "}\n");
     LineReader r;
     (void)conn_request(&r, req, true);

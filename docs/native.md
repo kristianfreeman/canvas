@@ -37,7 +37,7 @@ All return plain JSON-able values.
 - `canvasNative.render(payload) -> {ok: true} | {error, stack?, needsWeb?:
   true}`. `payload` is the same object the web page gets: `{kind, source,
   title?, data?, buttons?, wait, theme?, accent?}`. Markdown renders as
-  `<Markdown source={source}/>`. Ops for the commit are posted before it
+  `<Markdown source={source} onToggle/>`. Ops for the commit are posted before it
   returns. A `needsWeb` render posts no ops; if the context is reused, its
   next batch starts by removing the root children Swift still shows.
 - `canvasNative.setData(data)`: re-render with new `data`, state kept.
@@ -63,7 +63,10 @@ All return plain JSON-able values.
 - `{type: "result", value}`, `{type: "close"}`, `{type: "close", reason:
   "escape"}`: as the page messages in `docs/protocol.md`.
 - `{type: "subscribe", channel, every?}`, `{type: "unsubscribe", channel}`,
-  `{type: "publish", channel, value}`: as the page messages.
+  `{type: "publish", channel, value, persist?}`: as the page messages.
+- `{type: "task", line, checked}`: a task checkbox of a Markdown panel was
+  clicked. The runtime renders a Markdown panel as
+  `<Markdown source onToggle/>` and posts this from `onToggle`.
 - `{type: "error", message, stack?}`: an error after the first render.
 - `{type: "open", url}`: a link was clicked (Markdown links).
 
@@ -119,7 +122,7 @@ element is its body.
 | `Text` | `size`, `muted`, `weight`, `color`, `mono` | |
 | `Code` | | |
 | `CodeBlock` | `lang`, `lines` (see Highlighting) | |
-| `Markdown` | `blocks` (see Markdown) | |
+| `Markdown` | `blocks` (see Markdown), `onToggle?` (`$fn`, called with `[{line, checked}]` when a task checkbox is clicked) | |
 | `Kbd` | `tone?` (`"accent"`) | |
 | `KeyChips` | `keys` (string or string array; Swift splits it, see Key chips) | |
 | `Card` | `padding` | `title`, `subtitle`, `actions` |
@@ -194,7 +197,7 @@ runtime:
 {t:"h", level:1..6, inl:[Inline]}
 {t:"p", inl:[Inline]}
 {t:"quote", blocks:[Block]}
-{t:"list", ordered:bool, start?:n, items:[{task?:bool|null, checked?:bool, blocks:[Block]}]}
+{t:"list", ordered:bool, start?:n, items:[{task?:bool|null, checked?:bool, line?:n, blocks:[Block]}]}
 {t:"code", lang, lines:[[Token]]}
 {t:"table", align:["left"|"center"|"right"|null], head:[[Inline]], rows:[[[Inline]]]}
 {t:"hr"}
@@ -210,6 +213,11 @@ Inline runs:
 {t:"br"}
 {t:"fnref", id, n}
 ```
+
+A task item's `line` is the source line it starts on, from 0, counted as
+markdown-it counts them (`\r\n`, `\r` and `\n` each end a line). Swift
+draws a task's checkbox as a button when the `Markdown` node has `onToggle`
+and the item has a `line`.
 
 Raw HTML is text. Images become their alt text. A fence with no language
 has `lang: ""`. Footnote ids look like `fn1`. Links open through `open`

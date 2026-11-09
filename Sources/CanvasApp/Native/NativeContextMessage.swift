@@ -10,10 +10,12 @@ enum NativeMessage {
     /// `every` is in milliseconds, for `canvas.sys.*`.
     case subscribe(channel: String, every: Int?)
     case unsubscribe(channel: String)
-    case publish(channel: String, value: Any)
+    case publish(channel: String, value: Any, persist: Bool)
     /// `needsWeb` when a later render used something only WebKit can draw.
     case error(message: String, stack: String?, needsWeb: Bool)
     case open(URL)
+    /// A task checkbox of a Markdown panel was clicked; `line` counts from 0.
+    case task(line: Int, checked: Bool)
     /// Follows the `error` for a timer the time limit stopped: the context
     /// is unusable. Posted by Swift, not the runtime.
     case timedOut(message: String)
@@ -29,7 +31,10 @@ enum NativeMessage {
         },
         "unsubscribe": { body in (body["channel"] as? String).map { .unsubscribe(channel: $0) } },
         "publish": { body in
-            (body["channel"] as? String).map { .publish(channel: $0, value: body["value"] ?? NSNull()) }
+            (body["channel"] as? String).map {
+                .publish(channel: $0, value: body["value"] ?? NSNull(),
+                         persist: (body["persist"] as? NSNumber)?.boolValue ?? false)
+            }
         },
         "error": { body in
             .error(
@@ -37,7 +42,8 @@ enum NativeMessage {
                 stack: body["stack"] as? String,
                 needsWeb: (body["needsWeb"] as? NSNumber)?.boolValue ?? false)
         },
-        "open": { body in (body["url"] as? String).flatMap(URL.init(string:)).map(Self.open) }
+        "open": { body in (body["url"] as? String).flatMap(URL.init(string:)).map(Self.open) },
+        "task": { body in TaskClick(body).map { .task(line: $0.line, checked: $0.checked) } }
     ]
 
     init?(_ body: [String: Any]) {

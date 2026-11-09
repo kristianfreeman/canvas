@@ -23,9 +23,13 @@ extension Server {
             client.reply(["event": "error", "message": error.message])
             return
         }
+        if let message = applyHotkey(request.hotkey, json: json, id: request.id) {
+            client.reply(["event": "error", "message": message])
+            return
+        }
         let record = startTrace(id: request.id, command: command, client: client, requested: request.trace)
         client.trace = record
-        if command == .toggle, let existing = panels[request.id], existing.isOpen {
+        if command == .toggle, let existing = panels[request.id], existing.isOpen, !existing.stashed {
             record.note = "hide"
             existing.close()
             record.mark(.reply)
@@ -83,7 +87,8 @@ extension Server {
     /// Lays out a stack group's open panels, oldest first, on the oldest
     /// one's screen and with its anchor.
     func restack(_ group: String) {
-        let members = panels.values.filter { $0.isOpen && $0.stack == group }.sorted { $0.created < $1.created }
+        let members = panels.values.filter { $0.isOpen && !$0.stashed && $0.stack == group }
+            .sorted { $0.created < $1.created }
         guard let first = members.first, let screen = first.layout.screen else { return }
         let frames = PanelLayout.stackedFrames(members.map(\.layout), on: screen, mouse: first.desktop.mouse)
         for (member, frame) in zip(members, frames) {

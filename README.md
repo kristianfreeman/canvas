@@ -95,6 +95,31 @@ echo '**Tests passed**' | canvas show - --id note-2 --stack notes --position top
 
 When you drag or resize a panel, Canvas remembers its frame under its id. A later `show` without `--position` or `--at` puts it back there. `--forget` clears it.
 
+## A floating to-do list
+
+Task items in a Markdown file are checkboxes you can click. Canvas writes `[x]` or `[ ]` back to the file, so the file stays the source of truth for you, your editor and any agent that reads it. Pin it in a corner and give it a hotkey:
+
+```sh
+canvas show examples/todo.md --id todo --pin --position top-right --width 380 --hotkey ctrl+opt+t
+```
+
+Ctrl+Opt+T now hides the list and brings it back, scroll position and all. After you close it with × or Esc, the same hotkey shows it again from the file. Hotkeys are saved and come back when the server starts, so they last across logins. `canvas hotkeys` lists them, and `--hotkey none` removes one.
+
+One more hotkey hides every panel at once and brings them back. Set it in `~/.config/canvas/config.toml`, where it takes effect as soon as you save, or bind `canvas toggle --all` in your own launcher:
+
+```toml
+hotkey = "ctrl+opt+space"
+```
+
+For lists a TSX page keeps itself, the `useStore` hook works like `useState`, but the value lives in a persisted channel that survives closing the panel and restarting the server. `examples/todo.tsx` is a small to-do app built on it, and scripts read and change its items:
+
+```sh
+canvas show examples/todo.tsx --id todo-app --pin --position top-right --width 400
+canvas get todo.items
+canvas pub todo.items '[{"text":"Ship it","done":false}]' --persist
+canvas pub todo.items --clear
+```
+
 ## Live data with channels
 
 A channel is a named stream of JSON values that the server keeps, with a short history. Scripts publish with `canvas pub`, pages listen with the `useChannel` and `useSeries` hooks, and anything can read with `canvas sub`.

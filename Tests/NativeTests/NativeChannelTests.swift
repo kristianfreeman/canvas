@@ -46,7 +46,7 @@ import Testing
         """)
         _ = await page.invoke(try #require(page.function("Button", "onClick")))
         let published = page.messages.compactMap { message -> String? in
-            guard case .publish(let channel, let value) = message else { return nil }
+            guard case .publish(let channel, let value, _) = message else { return nil }
             return "\(channel)=\(canonical(value))"
         }
         #expect(published == [#"top.select={"pid":7}"#])

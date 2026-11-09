@@ -46,6 +46,12 @@ final class Client {
         source.resume()
     }
 
+    /// A caller with nobody on the other end, for a show a hotkey started.
+    static func detached() -> Client {
+        let fd = open("/dev/null", O_RDWR | O_CLOEXEC)
+        return Client(fd: fd, accepted: Clock.now(), reader: LineReader(fd: fd))
+    }
+
     @discardableResult
     func send(_ object: [String: Any]) -> Bool {
         guard !finished else { return false }

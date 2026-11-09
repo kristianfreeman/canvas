@@ -60,6 +60,10 @@ final class WebPage: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKU
             guard let string = body["url"] as? String, let url = URL(string: string) else { return }
             openExternally(url)
         },
+        "task": { page, body in
+            guard let click = TaskClick(body) else { return }
+            page.delegate?.contentDidToggleTask(line: click.line, checked: click.checked)
+        },
         "subscribe": { page, body in
             guard let channel = body["channel"] as? String else { return }
             page.delegate?.contentDidSubscribe(channel: channel, every: (body["every"] as? NSNumber)?.intValue)
@@ -70,7 +74,8 @@ final class WebPage: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKU
         },
         "publish": { page, body in
             guard let channel = body["channel"] as? String else { return }
-            page.delegate?.contentDidPublish(channel: channel, value: body["value"] ?? NSNull())
+            page.delegate?.contentDidPublish(channel: channel, value: body["value"] ?? NSNull(),
+                                             persist: (body["persist"] as? NSNumber)?.boolValue ?? false)
         }
     ]
 

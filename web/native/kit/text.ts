@@ -37,11 +37,11 @@ export function CodeBlock({ code, lang, children, ...rest }: PropsOf<'CodeBlock'
   return h('CodeBlock', { lang, lines, style: styleOf(rest) })
 }
 
-export function Markdown({ source, children, ...rest }: PropsOf<'Markdown'>) {
+export function Markdown({ source, children, onToggle, ...rest }: PropsOf<'Markdown'>) {
   const text = source ?? childText(children)
   const blocks = useMemo(() => markdownBlocks(text), [text])
 
-  return h('Markdown', { blocks, style: styleOf(rest) })
+  return h('Markdown', { blocks, onToggle, style: styleOf(rest) })
 }
 
 export function Kbd({ tone, children, ...rest }: PropsOf<'Kbd'>) {

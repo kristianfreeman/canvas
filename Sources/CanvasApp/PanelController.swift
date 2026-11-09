@@ -40,6 +40,8 @@ final class PanelController: NSObject, NSWindowDelegate {
     /// The macOS accent last sent to the content, when the request names none.
     var systemAccent: String?
     private(set) var closed = false
+    /// Hidden by a hotkey or `toggle --all` while still open.
+    var stashed = false
     /// Set at close: the panel can wait hidden for the same request.
     private(set) var mayRest = false
 
@@ -94,7 +96,7 @@ final class PanelController: NSObject, NSWindowDelegate {
         if pathChanged { startWatching() }
         attach(caller: client)
         applyPlacement(new.placement)
-        if revealed, new.focus { focus() }
+        if stashed { unstash(focus: new.focus) } else if revealed, new.focus { focus() }
         render()
     }
 
@@ -106,6 +108,7 @@ final class PanelController: NSObject, NSWindowDelegate {
     func close(result: Any?) {
         guard !closed else { return }
         closed = true
+        stashed = false
         panel.orderOut(nil)
         debugLog("close \(id)")
         caller.finish(result.map { ["event": "result", "value": $0] } ?? ["event": "closed"])
@@ -158,6 +161,7 @@ final class PanelController: NSObject, NSWindowDelegate {
             "renderer": renderer.rawValue,
             "path": request.path ?? NSNull(),
             "wait": request.wait && caller.isAttached,
+            "hidden": stashed,
             "frame": panel.frame.wire,
             "screen": panel.screen?.localizedName ?? layout.screen?.name ?? NSNull()
         ]
@@ -192,7 +196,7 @@ final class PanelController: NSObject, NSWindowDelegate {
         watcher = FileWatcher(path: path) { [weak self] in self?.fileChanged() }
     }
 
-    private func fileChanged() {
+    func fileChanged() {
         guard !closed, let path = request.path,
               let text = try? String(contentsOfFile: path, encoding: .utf8),
               text != request.source else { return }

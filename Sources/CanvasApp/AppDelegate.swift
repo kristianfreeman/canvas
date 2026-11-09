@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var server: Server?
     private var lockFD: Int32 = -1
     private var sources: [DispatchSourceProtocol] = []
+    private var configWatcher: ConfigWatcher?
 
     func applicationDidFinishLaunching(_: Notification) {
         Sock.ignoreSigPipe()
@@ -14,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.mainMenu = Self.makeMainMenu()
         let config = Config.load()
+        ChannelHub.shared.persist(to: Paths.store)
         let hosts = HostPools(indexURL: Paths.webDir.appendingPathComponent("index.html"),
                               policy: WarmPolicy(config), runtime: Self.makeRuntime())
         let server = Server(hosts: hosts)
@@ -24,6 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             exit(1)
         }
         self.server = server
+        server.registerHotkeys(global: config.hotkey)
+        configWatcher = ConfigWatcher(url: Paths.config) { [weak server] text in server?.reloadConfig(text) }
         debugLog("warm policy \(config.warm.rawValue), "
                  + "linger \(config.lingerSeconds) s, idle \(config.idleMinutes) min")
         watchSignals(server)
@@ -42,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_: Notification) {
+        ChannelHub.shared.flush()
         server?.stop()
     }
 
@@ -52,6 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             signal(sig, SIG_IGN)
             let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
             source.setEventHandler {
+                ChannelHub.shared.flush()
                 server.stop()
                 exit(0)
             }

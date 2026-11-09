@@ -111,6 +111,22 @@ int cmd_hide(Args *a) {
     return await_one(&r, 5);
 }
 
+/* One JSON object per line until the server closes. */
+static int print_lines(LineReader *r) {
+    uint64_t deadline = deadline_after(5);
+    for (;;) {
+        Span line;
+        LrStatus st = lr_next(r, deadline, &line);
+        if (st == LR_EOF) {
+            return 0;
+        }
+        if (st == LR_TIMEOUT) {
+            fail("%s", server_timeout);
+        }
+        out_line(line);
+    }
+}
+
 int cmd_list(Args *a) {
     only_emit(a, "list");
     Buf req = {0};
@@ -120,18 +136,7 @@ int cmd_list(Args *a) {
     if (!conn_request(&r, &req, false)) {
         return 0;
     }
-    uint64_t deadline = deadline_after(5);
-    for (;;) {
-        Span line;
-        LrStatus st = lr_next(&r, deadline, &line);
-        if (st == LR_EOF) {
-            return 0;
-        }
-        if (st == LR_TIMEOUT) {
-            fail("%s", server_timeout);
-        }
-        out_line(line);
-    }
+    return print_lines(&r);
 }
 
 int cmd_ping(Args *a) {
@@ -144,4 +149,59 @@ int cmd_ping(Args *a) {
         return 1;
     }
     return await_one(&r, 2);
+}
+
+int toggle_all(Args *a) {
+    for (const char *arg = args_next(a); arg != NULL; arg = args_next(a)) {
+        if (strcmp(arg, "--emit") == 0) {
+            conn_emit_only();
+        } else if (strcmp(arg, "--all") != 0) {
+            usage_fail("toggle --all takes no other arguments except --emit, got %s", arg);
+        }
+    }
+    Buf req = {0};
+    begin(&req, "toggle");
+    json_key(&req, "all");
+    buf_puts(&req, "true}\n");
+    LineReader r;
+    if (!conn_request(&r, &req, false)) {
+        return 0;
+    }
+    return await_one(&r, 5);
+}
+
+int cmd_hotkeys(Args *a) {
+    only_emit(a, "hotkeys");
+    Buf req = {0};
+    begin(&req, "hotkeys");
+    buf_puts(&req, "}\n");
+    LineReader r;
+    if (!conn_request(&r, &req, false)) {
+        return 0;
+    }
+    return print_lines(&r);
+}
+
+int cmd_get(Args *a) {
+    const char *channel = NULL;
+    for (const char *arg = args_next(a); arg != NULL; arg = args_next(a)) {
+        if (strcmp(arg, "--emit") == 0) {
+            conn_emit_only();
+        } else if (args_is_flag(arg) || channel != NULL) {
+            usage_fail("get takes one CHANNEL, got %s", arg);
+        } else {
+            channel = arg;
+        }
+    }
+    if (channel == NULL || !channel_valid(channel)) {
+        usage_fail("get needs a CHANNEL of dot-separated [a-z0-9_-] segments");
+    }
+    Buf req = {0};
+    begin(&req, "get");
+    json_key(&req, "channel");
+    json_cstr(&req, channel);
+    buf_puts(&req, "}\n");
+    LineReader r;
+    (void)conn_request(&r, &req, true);
+    return await_one(&r, 10);
 }

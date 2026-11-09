@@ -10,6 +10,8 @@ public struct Config: Equatable {
     public var warm = Warm.linger
     public var idleMinutes = 10
     public var lingerSeconds = 120
+    /// Shows and hides every panel at once, like `canvas toggle --all`.
+    public var hotkey: Hotkey?
 
     public init() {}
 
@@ -31,15 +33,26 @@ public struct Config: Equatable {
     }
 
     private mutating func apply(_ key: String, _ value: Value) {
-        switch (key, value) {
-        case ("warm", .string(let raw)):
-            warm = Warm(rawValue: raw) ?? warm
-        case ("idle_minutes", .bare(let raw)):
-            if let minutes = Int(raw), minutes > 0 { idleMinutes = minutes }
-        case ("linger_seconds", .bare(let raw)):
-            if let seconds = Int(raw), seconds >= 0 { lingerSeconds = seconds }
-        default:
-            break
+        switch value {
+        case .string(let raw): applyString(key, raw)
+        case .bare(let raw): applyNumber(key, raw)
+        }
+    }
+
+    private mutating func applyString(_ key: String, _ raw: String) {
+        switch key {
+        case "warm": warm = Warm(rawValue: raw) ?? warm
+        case "hotkey": hotkey = try? Hotkey(parsing: raw)
+        default: break
+        }
+    }
+
+    private mutating func applyNumber(_ key: String, _ raw: String) {
+        guard let number = Int(raw) else { return }
+        switch key {
+        case "idle_minutes" where number > 0: idleMinutes = number
+        case "linger_seconds" where number >= 0: lingerSeconds = number
+        default: break
         }
     }
 

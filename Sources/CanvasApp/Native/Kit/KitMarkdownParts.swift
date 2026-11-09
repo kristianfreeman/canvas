@@ -124,12 +124,28 @@ private struct MarkdownListItemView: View {
 private struct MarkdownTaskItem: View {
     let item: MarkdownListItem
     @Environment(\.kitText) private var style
+    @Environment(\.kitTaskToggle) private var toggle
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 0.6 * style.size) {
-            CheckGlyph(checked: item.checked, size: 15, radius: 4, filled: false)
-                .alignmentGuide(.firstTextBaseline) { $0.height - 2 }
+            box.alignmentGuide(.firstTextBaseline) { $0.height - 2 }
             MarkdownItemContent(blocks: item.blocks).kitText { if item.checked { $0.ink = .muted } }
+        }
+    }
+
+    /// A button when the Markdown has `onToggle` and the item knows its line.
+    @ViewBuilder private var box: some View {
+        let glyph = CheckGlyph(checked: item.checked, size: 15, radius: 4, filled: false)
+        if let toggle, let line = item.line {
+            // The shape goes on the label: a plain button hit-tests its label,
+            // and an open box is hollow, so a click in its middle missed.
+            Button { toggle(line: line, checked: !item.checked) } label: {
+                glyph.contentShape(Rectangle().inset(by: -4))
+            }
+                .buttonStyle(.plain)
+                .accessibilityLabel(item.checked ? "Uncheck task" : "Check task")
+        } else {
+            glyph
         }
     }
 }

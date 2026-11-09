@@ -62,8 +62,18 @@ declare module 'canvas' {
   /** Up to `size` recent values on a channel, oldest first. `size` defaults to 120. */
   export function useSeries<T = unknown>(name: string, size?: number): T[]
 
-  /** Publishes a JSON value to a channel. Names starting with `canvas.` are reserved and rejected. */
-  export function publish(channel: string, value: unknown): void
+  /**
+   * Publishes a JSON value to a channel. Names starting with `canvas.` are reserved and rejected. `persist` keeps
+   * the channel's latest value across server restarts, as `canvas pub --persist` does.
+   */
+  export function publish(channel: string, value: unknown, options?: { persist?: boolean }): void
+
+  /**
+   * Like `useState`, but the value lives in the persisted channel `name`: it survives closing the panel and
+   * restarting the server, other panels on the channel see it, and `canvas get` and `canvas pub` read and change
+   * it. `initial` is used until the channel has a value.
+   */
+  export function useStore<T>(name: string, initial: T): [T, (next: T | ((previous: T) => T)) => void]
 
   // ---------- Layout ----------
 
@@ -107,7 +117,14 @@ declare module 'canvas' {
   export function CodeBlock(props: Styled & { code?: string; lang?: string; children?: string }): ReactElement
 
   /** Renders a Markdown string with the same pipeline as `.md` files. */
-  export function Markdown(props: Styled & { source?: string; children?: string }): ReactElement
+  export function Markdown(
+    props: Styled & {
+      source?: string
+      children?: string
+      /** Makes task checkboxes clickable. `line` is the item's source line, counting from 0. */
+      onToggle?: (task: { line: number; checked: boolean }) => void
+    },
+  ): ReactElement
 
   /** A key chip. `tone="accent"` tints it with the accent color. */
   export function Kbd(props: Styled & { tone?: 'accent'; children?: ReactNode }): ReactElement

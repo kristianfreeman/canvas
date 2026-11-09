@@ -40,6 +40,19 @@ extension Server {
         client.startReading()
     }
 
+    /// `get`: a channel's latest value, once.
+    func read(_ json: [String: Any], _ client: Client) {
+        guard let channel = json["channel"] as? String, ChannelStore.isValidName(channel) else {
+            client.reply(["event": "error", "message": "get needs a valid channel name"])
+            return
+        }
+        guard let value = channelHub.store.latest(channel) else {
+            client.reply(["event": "error", "message": "channel \(channel) has no value"])
+            return
+        }
+        client.reply(["event": "value", "value": value])
+    }
+
     /// History, then live messages, until either side closes.
     func subscribe(_ json: [String: Any], _ client: Client) {
         let request: SubRequest

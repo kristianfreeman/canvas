@@ -113,12 +113,34 @@ canvas move --id note-1 --position bottom-right
 - `canvas list` prints one JSON object per visible panel.
 - `canvas toggle FILE --id NAME` hides the panel if it's visible and shows it otherwise.
 - `canvas hide --id NAME` closes one panel, and `canvas hide --all` closes every panel. Close panels you opened once they're stale.
+- `canvas toggle --all` hides every shown panel without closing it, and brings them back the next time. The user may bind this to a global hotkey with `hotkey = "ctrl+opt+space"` in `~/.config/canvas/config.toml`, which takes effect when the file is saved.
+
+## Keep a to-do list
+
+A Markdown panel's task items are checkboxes the user can click. A click writes `[x]` or `[ ]` back to the file, so read the file again to see what's done. `--hotkey` binds a global shortcut that hides and shows that panel, and shows it again from the file after it was closed. `canvas hotkeys` lists the bindings, and `--hotkey none` removes one.
+
+```bash
+cat > todo.md <<'EOF'
+# Today
+- [ ] Review the deploy plan
+- [x] Reply to Sam
+EOF
+canvas show todo.md --id todo --pin --position top-right --width 360 --hotkey ctrl+opt+t
+canvas hotkeys
+```
+
+For state a TSX page owns, use `useStore(name, initial)`. It works like `useState`, but the value lives in a persisted channel: it survives closing the panel and restarting the server. `canvas get NAME` prints it, `canvas pub NAME VALUE --persist` replaces it, and `canvas pub NAME --clear` deletes it.
+
+```bash
+canvas get todo.items
+canvas pub todo.items '[{"text":"Ship it","done":false}]' --persist
+```
 
 ## TSX
 
 A `.tsx` file default-exports a component that gets `{ data }` as props. It can import from `react` and `canvas` only.
 
-- **Hooks:** `useCanvas()` returns `submit`, `close`, `publish`, `data` and `wait` (true when the caller is blocking on `--wait`). `useChannel`, `useSeries` and `publish` are also exports.
+- **Hooks:** `useCanvas()` returns `submit`, `close`, `publish`, `data` and `wait` (true when the caller is blocking on `--wait`). `useChannel`, `useSeries`, `useStore` and `publish` are also exports.
 - **Layout:** `Stack`, `Row`, `Grid`, `Divider`, `Spacer`
 - **Text:** `Heading`, `Text`, `Code`, `CodeBlock`, `Markdown`, `Kbd`, `KeyChips`
 - **Data:** `Card`, `Table`, `Stat`, `Badge`, `Progress`, `BarChart`, `Sparkline`
@@ -139,6 +161,38 @@ export default function BuildProgress({ data }: { data: Build }) {
         <Text muted>{status ? `${status.step}: ${status.ok ? 'passing' : 'failing'}` : 'Waiting for status'}</Text>
       </Stack>
     </Card>
+  )
+}
+```
+
+A to-do list that keeps its items with `useStore`:
+
+```tsx
+import { Button, Checkbox, Form, Input, Row, Stack, useStore } from 'canvas'
+
+type Item = { text: string; done: boolean }
+
+export default function Todo() {
+  const [items, setItems] = useStore<Item[]>('todo.items', [])
+  const toggle = (index: number) =>
+    setItems((list) => list.map((item, i) => (i === index ? { ...item, done: !item.done } : item)))
+  // Item text is the key, so a duplicate isn't added.
+  const add = (text: unknown) => {
+    const trimmed = typeof text === 'string' ? text.trim() : ''
+    if (trimmed) setItems((list) => (list.some((item) => item.text === trimmed) ? list : [...list, { text: trimmed, done: false }]))
+  }
+  return (
+    <Stack gap={8}>
+      {items.map((item, i) => (
+        <Checkbox key={item.text} name={`item${i}`} label={item.text} checked={item.done} onChange={() => toggle(i)} />
+      ))}
+      <Form onSubmit={(values) => add(values.text)}>
+        <Row gap={8}>
+          <Input name="text" placeholder="Add an item" />
+          <Button variant="primary">Add</Button>
+        </Row>
+      </Form>
+    </Stack>
   )
 }
 ```

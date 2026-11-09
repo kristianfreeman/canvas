@@ -1,0 +1,13 @@
+A later publish without --persist stops saving the channel
+
+--- a/Sources/CanvasCore/ChannelStore.swift
++++ b/Sources/CanvasCore/ChannelStore.swift
+@@ -103,7 +103,7 @@
+             clear(message.channel)
+             return NSNull()
+         }
+-        if message.persist { persisted.insert(message.channel) }
++        if message.persist { persisted.insert(message.channel) } else { persisted.remove(message.channel) }
+         let current = channels[message.channel]
+         var channel = current ?? Channel(latest: NSNull(), history: History(capacity: Self.defaultCapacity))
+         if let keep = message.keep { channel.history.resize(keep) }

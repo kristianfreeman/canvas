@@ -30,10 +30,25 @@ test('task lists produce disabled checkboxes inside labels', () => {
   const html = renderMarkdown('- [x] done\n- [ ] todo\n')
 
   expect(html).toContain('<ul class="contains-task-list">')
-  expect(html.match(/<li class="task-list-item">/g)).toHaveLength(2)
+  expect(html.match(/<li class="task-list-item" data-line="\d+">/g)).toHaveLength(2)
   expect(html.match(/<input class="task-list-item-checkbox" checked=""/g)).toHaveLength(1)
   expect(html.match(/<input [^>]*disabled=""[^>]*type="checkbox">/g)).toHaveLength(2)
   expect(html).toMatch(/<label[^>]*>.*done<\/label>/)
+})
+
+test('list items carry the source line they start on', () => {
+  const source = '# Plan\n\n- [ ] one\n- [x] two\n  - [ ] nested\n\n1. first\n'
+  const html = renderMarkdown(source)
+  const lines = [...html.matchAll(/data-line="(\d+)"/g)].map((match) => Number(match[1]))
+
+  expect(lines).toEqual([2, 3, 4, 6])
+})
+
+test('interactive Markdown leaves task checkboxes enabled', () => {
+  const source = '- [ ] a\n- [x] b\n'
+
+  expect(renderMarkdown(source, { interactive: true })).not.toContain('disabled')
+  expect(renderMarkdown(source).match(/disabled=""/g)).toHaveLength(2)
 })
 
 test('footnotes link both ways with numeric captions', () => {

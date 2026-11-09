@@ -55,6 +55,8 @@ const CASES: { file: string; label: string; data?: unknown; batch?: PushMessage[
   { file: 'live.tsx', label: 'a channel', data: { channel: 'demo.load', unit: '%' }, batch: [{ channel: 'demo.load', value: 42, history: [10, 42] }] },
   { file: 'top.tsx', label: 'no data' },
   { file: 'top.tsx', label: 'sampler data', batch: sysSample({ percent: 15, charging: false, source: 'battery' }) },
+  { file: 'todo.tsx', label: 'no data' },
+  { file: 'todo.tsx', label: 'stored items', batch: [{ channel: 'todo.items', value: [{ text: 'a', done: false }] }] },
 ]
 
 beforeEach(() => {
@@ -184,5 +186,42 @@ describe('approve.tsx and live.tsx natively', () => {
     expect(only(root, 'Sparkline').props.data).toEqual([10, 42])
     click(only(root, 'Button'))
     expect(published()).toEqual([{ type: 'publish', channel: 'demo.load.mark', value: { at: expect.any(Number), value: 42 } }])
+  })
+})
+
+describe('todo.tsx natively', () => {
+  const items = [
+    { text: 'Review', done: false },
+    { text: 'Reply', done: true },
+  ]
+
+  test('checking an item and adding one publish the whole list, persisted, and show at once', () => {
+    const root = show('todo.tsx', undefined, [{ channel: 'todo.items', value: items }])
+    const boxes = findAll(root, 'Checkbox')
+
+    expect(boxes.map((box) => box.props.checked)).toEqual([false, true])
+    const checked = click(boxes[0], 'onChange', [{ checked: true }])
+
+    expect(findAll(checked, 'Checkbox').map((box) => box.props.checked)).toEqual([true, true])
+    const added = click(only(checked, 'Form'), 'onSubmit', [{ text: '  Ship  ' }])
+
+    expect(findAll(added, 'Checkbox')).toHaveLength(3)
+    expect(published()).toEqual([
+      { type: 'publish', channel: 'todo.items', value: [{ ...items[0], done: true }, items[1]], persist: true },
+      {
+        type: 'publish',
+        channel: 'todo.items',
+        value: [{ ...items[0], done: true }, items[1], { text: 'Ship', done: false }],
+        persist: true,
+      },
+    ])
+  })
+
+  test('a push from elsewhere replaces what was set here', () => {
+    const root = show('todo.tsx', undefined, [{ channel: 'todo.items', value: items }])
+    click(findAll(root, 'Checkbox')[0], 'onChange', [{ checked: true }])
+    expect(push([{ channel: 'todo.items', value: [{ text: 'From the CLI', done: false }] }])).toEqual({ ok: true })
+
+    expect(findAll(tree(), 'Checkbox')).toHaveLength(1)
   })
 })

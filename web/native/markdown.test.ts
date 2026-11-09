@@ -44,6 +44,49 @@ describe('markdownBlocks inline runs', () => {
 
 })
 
+type Block = ReturnType<typeof markdownBlocks>[number]
+type Task = { line?: number; checked?: boolean }
+
+/** Task items with the source line each names, as `TaskList.setChecked` in Swift counts lines. */
+function tasks(blocks: Block[]): Task[] {
+  return blocks.flatMap((block): Task[] => {
+    if (block.t === 'quote') return tasks(block.blocks)
+    if (block.t !== 'list') return []
+
+    return block.items.flatMap((item) => [...(item.task ? [{ line: item.line, checked: item.checked }] : []), ...tasks(item.blocks)])
+  })
+}
+
+describe('markdownBlocks task lines', () => {
+  test('each task names the line its marker is on, through nesting, quotes and CRLF', () => {
+    const sources = [
+      '# Todo\n\n- [ ] one\n- [x] two\n  - [ ] nested\n\n> - [X] quoted\n',
+      'intro\r\n\r\n1. [ ] first\r\n2. [x] second\r\n',
+      '- [ ] a\n\n  continued paragraph\n- [ ] b\n',
+    ]
+
+    for (const source of sources) {
+      const lines = source.split(/\r\n?|\n/)
+      const found = tasks(markdownBlocks(source))
+
+      expect(found.length).toBeGreaterThan(0)
+      for (const { line, checked } of found) {
+        expect(line).toBeNumber()
+        const text = lines[line ?? -1]
+
+        expect(text).toMatch(/^[\s>]*([-*+]|\d+[.)])\s+\[[ xX]\]/)
+        expect(/\[[xX]\]/.test(text)).toBe(checked ?? false)
+      }
+    }
+  })
+
+  test('plain items carry no line', () => {
+    const [list] = markdownBlocks('- plain\n')
+
+    expect(list.t === 'list' && list.items[0].line).toBeUndefined()
+  })
+})
+
 describe('markdownBlocks containers', () => {
   test('lists keep order, start and nesting; task markers become flags', () => {
     const blocks = markdownBlocks('3. a\n4. b\n   - [x] done\n   - [ ] todo\n   - plain')

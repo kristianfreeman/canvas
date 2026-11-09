@@ -12,6 +12,7 @@ import {
 } from 'react'
 import { close, post, submit } from './bridge'
 import { CanvasProvider } from './kit'
+import { taskChange } from './markdown'
 import { measureSurface } from './measure'
 import { getState, reportError, useStore, type CanvasError, type Content, type Payload } from './store'
 
@@ -108,6 +109,20 @@ function MarkdownBody({ html }: { html: string }) {
   useLayoutEffect(() => {
     if (ref.current) ref.current.innerHTML = html
   }, [html])
+
+  useEffect(() => {
+    const body = ref.current
+
+    if (!body) return
+    const onChange = (event: Event) => {
+      const task = taskChange(event.target)
+
+      if (task) post({ type: 'task', ...task })
+    }
+    body.addEventListener('change', onChange)
+
+    return () => body.removeEventListener('change', onChange)
+  }, [])
 
   return <div className="cv-prose" ref={ref} />
 }

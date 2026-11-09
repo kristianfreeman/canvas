@@ -1,0 +1,12 @@
+Moving the global hotkey off a panel hotkey's keys leaves that panel hotkey dead
+
+--- a/Sources/CanvasCore/ConfigReload.swift
++++ b/Sources/CanvasCore/ConfigReload.swift
+@@ -26,7 +26,6 @@
+             return
+         }
+         var steps: [HotkeyRegistration] = []
+-        if let old, let panel = bindings.binding(for: old) { steps.append(.panel(id: panel.id, hotkey: old)) }
+         if let new { steps.append(.global(new)) }
+         unregister = old.map { [$0] } ?? []
+         register = steps

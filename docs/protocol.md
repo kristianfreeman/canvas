@@ -30,7 +30,8 @@ the page API below is the WebKit one.
   - `Contents/Resources/web/` holds the renderer.
 - **Home directory:** `CANVAS_HOME`, by default
   `~/Library/Application Support/Canvas`. It holds `canvas.sock` (mode
-  0600), `server.lock` and `frames.json`. With `CANVAS_DEBUG=1` the server
+  0600), `server.lock`, `frames.json`, `hotkeys.json` (panel hotkeys) and
+  `store.json` (persisted channels). With `CANVAS_DEBUG=1` the server
   logs to stderr; a dev server autostarted by the CLI sends that to
   `server.log` here. Tests point `CANVAS_HOME` at a temp directory.
 - **Config:** `~/.config/canvas/config.toml`, optional. The parser reads flat
@@ -46,6 +47,11 @@ the page API below is the WebKit one.
     the parked page whatever the setting.
   - `linger_seconds = 120`, used by `"linger"`.
   - `idle_minutes = 10`, used by `"idle"`.
+  - `hotkey = "ctrl+opt+space"`, no default: the global hotkey, which does
+    what `canvas toggle --all` does. See Hotkeys. The server watches
+    config.toml and applies a new `hotkey` as soon as the file is saved,
+    created or deleted. The other keys are read at launch, so a change to
+    them needs a server restart.
 - **Server start:**
   - **LaunchAgent:** `~/Library/LaunchAgents/dev.kristian.canvas.plist` starts
     the server at login. launchd owns the socket and launches the server
@@ -53,20 +59,24 @@ the page API below is the WebKit one.
   - **Started by hand:** `canvas-server serve` binds the socket itself.
   - **No server running:** if connecting fails, the CLI runs `open -g` on the
     bundle that contains it, or spawns `canvas-server serve` in a dev build.
-    Then it retries for up to 5 s. `ping`, `list`, `hide`, `sub` and `move`
-    never start the server.
+    Then it retries for up to 5 s. `ping`, `list`, `hide`, `sub`, `move`,
+    `hotkeys` and `toggle --all` never start the server.
 
 ## CLI
 
 ```
 canvas show [FILE | -] [options]           render, return once rendered
 canvas toggle [FILE | -] [options]         hide if --id is visible, else show
+canvas toggle --all                        stash every shown panel, or bring back the stashed ones
 canvas update --id ID (--data D | --stream)  replace an open canvas's data
 canvas move --id ID [placement options]    reposition an open canvas
 canvas hide [--id ID | --all]
 canvas list                                one JSON object per visible panel
-canvas pub CHANNEL [VALUE | -] [--merge] [--keep N] [--every DUR -- CMD ARGS...]
+canvas pub CHANNEL [VALUE | -] [--merge] [--persist] [--keep N] [--every DUR -- CMD ARGS...]
+canvas pub CHANNEL --clear                 delete a channel's value, history and persistence
 canvas sub CHANNEL... [--history]          NDJSON on stdout until killed
+canvas get CHANNEL                         print a channel's latest value
+canvas hotkeys                             one JSON object per hotkey
 canvas ping                                exit 0 if the server is up
 canvas help
 ```
@@ -88,6 +98,7 @@ canvas help
 | `--focus` / `--no-focus` | Defaults to on for `--wait` and `toggle`, off otherwise. |
 | `--timeout SECONDS` | With `--wait`, hide the panel and exit 3 when it runs out. |
 | `--trace` | Print stage timings to stderr as one JSON line. |
+| `--hotkey KEYS` | Bind a global hotkey to this id, like `ctrl+opt+t`. `none` removes the id's hotkey. See Hotkeys. |
 
 ### Placement options (`show`, `toggle` and `move`)
 
@@ -136,6 +147,62 @@ All values are in points.
   memory pressure drops them all. A resting panel isn't open: `list`,
   `update` and `move` don't see it.
 
+### Task lists
+
+A Markdown panel's task items (`- [ ] text`, `- [x] text`) are checkboxes
+the user can click. A click sets that item's marker to `[x]` or `[ ]` in the
+source and redraws the panel. When the panel shows a FILE, the server
+writes the change to the file in place, so whoever wrote the file sees it.
+If the file changed since the panel last drew it, the click is dropped and
+the new text drawn, so a click never overwrites someone else's edit. Panels
+shown from stdin change only their own copy. In TSX, `<Markdown onToggle>`
+makes the checkboxes clickable and leaves the change to the component.
+
+### Hotkeys
+
+A hotkey is a system-wide shortcut: modifiers and one key joined by `+`,
+case-insensitive, like `ctrl+opt+t` or `hyper+space`.
+
+- **Modifiers:** `ctrl` (`control`), `opt` (`option`, `alt`), `shift` and
+  `cmd` (`command`). `hyper` is all four and `meh` is ctrl, opt and shift.
+  At least one is needed, except for F1 to F20.
+- **Keys:** `a` to `z`, `0` to `9`, `f1` to `f20`, `space`, `return`
+  (`enter`), `tab`, `escape` (`esc`), `delete` (`backspace`),
+  `forwarddelete`, `home`, `end`, `pageup`, `pagedown`, `left`, `right`,
+  `up`, `down`, and ``- = [ ] ; ' , . / \ ` ``. Letters are the key's US
+  layout position.
+- **Registration:** Carbon `RegisterEventHotKey`, which needs no
+  Accessibility permission. macOS lets several apps register the same
+  shortcut and sends each press to all of them, so Canvas can't tell when
+  another app uses a hotkey: both react. Pick one nothing else uses. Only
+  a shortcut macOS refuses outright is an error.
+
+A hotkey **stashes** a panel: the window goes away, but the panel stays
+open, with its content, component state, channels and any waiting caller.
+The next press brings it back as it was. `list` reports a stashed panel
+with `"hidden": true`. A `show` or `toggle` for a stashed id brings it back
+too, and `hide` closes it.
+
+- **Global hotkey:** `hotkey` in config.toml, or `canvas toggle --all`.
+  Editing `hotkey` takes effect when the file is saved. When the global
+  hotkey has a panel hotkey's keys, the global hotkey wins, and the panel
+  hotkey works again once the global one moves elsewhere. If
+  any panel is shown, it stashes every shown panel. Otherwise it brings back
+  every stashed one, without taking focus. `toggle --all` answers `hidden`
+  or `shown`.
+- **Panel hotkeys:** `--hotkey KEYS` on a `show` or `toggle` binds KEYS to
+  that id, and the binding replaces the id's old one. KEYS moves to this id
+  if another id held it. A press stashes the open panel, brings back a
+  stashed one, or, when the id has no open panel, shows it again from the
+  request it was bound with, with focus. A FILE is read again at that point.
+  Bindings are saved in `hotkeys.json` and registered again when the server
+  starts, so they last across logins. `--hotkey` is checked before the
+  panel renders: a bad hotkey, or the global one, is an error and nothing
+  is shown.
+- **`canvas hotkeys`:** one line per hotkey, the global one first:
+  `{"hotkey","action":"toggle-all"}`, then
+  `{"hotkey","action":"toggle","id","path","open"}` per binding, by id.
+
 ### Channel commands
 
 - **`canvas pub CHANNEL VALUE`:** publish one JSON value. VALUE follows the
@@ -143,6 +210,14 @@ All values are in points.
   - `--merge` applies VALUE as an RFC 7386 merge patch to the current value.
   - `--keep N` sets the channel's history capacity. It defaults to 120 for new
     channels, and 0 turns history off.
+  - `--persist` makes the channel persistent from now on: the server saves
+    its latest value to `store.json` and puts it back when it starts again,
+    with a history of one. A page's `useStore` hook publishes this way.
+- **`canvas pub CHANNEL --clear`:** deletes the channel's value, history and
+  persistence. Subscribers aren't told and keep the value they have.
+- **`canvas get CHANNEL`:** prints the channel's latest value as one JSON
+  line and exits 0, or exits 1 when the channel has no value. Any channel can
+  be read, `canvas.*` included.
 - **`canvas pub CHANNEL -`:** each line on stdin is one message. One
   connection carries the whole stream, and the command exits 0 on EOF.
 - **`canvas pub CHANNEL --every DUR -- CMD ARGS...`:** run CMD every DUR (for
@@ -184,19 +259,23 @@ All values are in points.
 |---|---|---|
 | `ping` | | `{"event":"pong"}` |
 | `show`, `toggle` | See the show request fields below. | `rendered` or `error`, then with `wait` one of `result`, `closed` or `replaced`. A `toggle` that hides answers `hidden`. |
+| `toggle` all | `"all":true` | `{"event":"hidden"}` or `{"event":"shown"}` (see Hotkeys) |
 | `update` | `id`, `data` | `{"event":"updated"}`, or `error` when there's no such panel. |
 | `update` stream | `id`, `"stream":true`, then lines of `{"data":V}` | `{"event":"updated"}` after EOF, or `closed` if the panel closes first. |
 | `move` | `id` plus placement fields | `{"event":"moved","frame":{x,y,width,height}}` or `error` |
 | `hide` | `id` or `"all":true` | `{"event":"hidden"}` |
 | `list` | | One panel object per line (see below), then close. |
-| `pub` | `channel`, `value`, `op`, `keep` | `{"event":"ok"}` or `error` |
-| `pub` stream | `channel`, `op`, `keep`, `"stream":true`, then one JSON value per line | `{"event":"ok"}` after EOF |
+| `pub` | `channel`, `value`, `op`, `keep`, `persist` | `{"event":"ok"}` or `error` |
+| `pub` stream | `channel`, `op`, `keep`, `persist`, `"stream":true`, then one JSON value per line | `{"event":"ok"}` after EOF |
+| `get` | `channel` | `{"event":"value","value":V}`, or `error` when the channel has no value |
+| `hotkeys` | | One hotkey object per line (see Hotkeys), then close. |
 | `sub` | `channels` (array), `history` (bool) | Optionally `{"event":"history","channel","values":[...]}` per channel, then `{"event":"message","channel","value"}` lines until either side closes. |
 | `eval` | `id`, `js` | `{"event":"value","value":V}`. Accepted only when the server started with `CANVAS_TEST=1`; otherwise `error`. Tests use it to drive the page; in a native panel `js` runs as a plain function body in its JavaScript context. |
 | `trace` | | `{"event":"trace","stages":[...]}` with the server's most recent stage records (see Tracing). |
 
-`op` is `"set"` (the default) or `"merge"`. Setting `keep` resizes the
-history.
+`op` is `"set"` (the default), `"merge"` or `"clear"`, which takes no
+`value`. Setting `keep` resizes the history, and `"persist":true` makes the
+channel persistent.
 
 **Show request fields.** Only `cmd` and `source` are required. The CLI
 leaves out every option the user didn't give, so the server's defaults and
@@ -207,7 +286,8 @@ cmd, id, kind ("markdown"|"tsx"), source, path, title, data, buttons,
 wait, focus, stream, theme, accent, trace,
 width (number | "N%"), height (number | "N%"), minHeight, maxHeight (number | "N%"),
 position, at: {"x": number | "N%", "y": number | "N%"}, screen (string), margin,
-resizable, level, spaces, pin, clickThrough, opacity, stack, forget
+resizable, level, spaces, pin, clickThrough, opacity, stack, forget,
+hotkey (string: KEYS or "none")
 ```
 
 A negative zero in `at` (flush right or flush bottom) must be sent as `-0.0`
@@ -219,12 +299,15 @@ Each following line is `{"data":V}` and replaces the panel's data.
 **List entry:**
 
 ```
-{"id","title","kind","renderer","path","wait","frame":{"x","y","width","height"},
+{"id","title","kind","renderer","path","wait","hidden","hotkey","frame":{"x","y","width","height"},
  "screen": "<display name>", "level", "pinned", "clickThrough", "stack"}
 ```
 
 `renderer` is `"native"` or `"web"`: what draws the panel now. A panel that
 fell back to the page reports `"web"`.
+
+`hidden` is true while the panel is stashed. `hotkey` is the id's hotkey or
+null.
 
 `frame` is in AppKit global coordinates: the origin is the bottom-left of the
 main screen.
@@ -232,7 +315,7 @@ main screen.
 ### Events
 
 `rendered`, `error {message}`, `result {value}`, `closed`, `replaced`,
-`hidden`, `updated`, `moved {frame}`, `ok`, `pong`, `value {value}`,
+`hidden`, `shown`, `updated`, `moved {frame}`, `ok`, `pong`, `value {value}`,
 `history {channel, values}`, `message {channel, value}`, `trace {stages}`.
 
 When the request had `"trace": true`, the `rendered` and `error` events carry
@@ -318,7 +401,8 @@ as JSON source.
 | `open` | `url` | A link was clicked. The server opens only http, https and mailto URLs. |
 | `subscribe` | `channel`, `every?` (ms, for `canvas.sys.*`) | A hook started listening. The server replies with a `push` holding the history. |
 | `unsubscribe` | `channel` | The last hook for that channel unmounted. |
-| `publish` | `channel`, `value` | Publish from the page. Reserved names are rejected with a console error. |
+| `publish` | `channel`, `value`, `persist?` | Publish from the page. Reserved names are rejected with a console error. `persist: true` makes the channel persistent, as `pub --persist` does. |
+| `task` | `line`, `checked` | A task checkbox of a Markdown panel was clicked. `line` is the item's source line, from 0. See Task lists. |
 
 ## Kit additions (`canvas` module)
 
@@ -326,7 +410,16 @@ as JSON source.
   latest value and re-renders when it changes.
 - `useSeries<T>(name, size = 120): T[]` returns up to `size` recent values,
   oldest first.
-- `publish(name, value)`. `useCanvas()` also returns `publish`.
+- `publish(name, value, opts?: {persist?: boolean})`. `useCanvas()` also
+  returns `publish`.
+- `useStore<T>(name, initial): [T, set]` works like `useState`, but the
+  value is the persisted channel `name`: it survives closing the panel and
+  restarting the server, every panel on the channel shares it, and `canvas
+  get` and `canvas pub` read and change it. `initial` is the value until the
+  channel has one. `set` takes a value or an updater function, shows the new
+  value at once and publishes it with `persist`.
+- `<Markdown onToggle={({line, checked}) => ...}>` makes task checkboxes
+  clickable. `line` is the item's source line, from 0.
 - The `color` props take semantic names (`accent`, `success`, `warning`,
   `danger`, `info`, `muted`), the hue names `red`, `orange`, `yellow`,
   `green`, `teal`, `blue`, `purple`, `pink` and `gray` (Apple system colors
@@ -349,3 +442,15 @@ one interval after the first subscribe.
 | `canvas.sys.procs` | `[{pid, name, cpu, mem}]`: the top 40 by CPU. `cpu` is the share of one core, so it can exceed 1. `mem` is resident bytes. |
 | `canvas.sys.battery` | `{percent, charging, source}` or `null` without a battery. `percent` is a whole number 0..100, `source` is `"ac"` or `"battery"`. |
 | `canvas.sys.thermal` | `{state: "nominal"\|"fair"\|"serious"\|"critical"}` |
+
+## Changelog
+
+- **2026-11-09:** the server reloads `hotkey` from config.toml when the file
+  changes, with no restart. A shortcut that another app also holds is no
+  longer described as an error: macOS sends it to both.
+- **2026-11-08:** task checkboxes in Markdown panels can be clicked and are
+  written back to the file. Hotkeys: `--hotkey`, `toggle --all`, `canvas
+  hotkeys`, `hotkey` in config.toml, stashed panels and the `hidden` and
+  `hotkey` list fields. Persisted channels: `pub --persist`, `pub --clear`,
+  `canvas get`, `useStore`, and `publish`'s `persist` option. New page
+  message `task`, new event `shown`.

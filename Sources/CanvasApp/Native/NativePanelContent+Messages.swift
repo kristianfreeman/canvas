@@ -5,7 +5,11 @@ import Foundation
 extension NativePanelContent: NativeContextDelegate, NativeEvents {
     func nativeContext(_ context: NativeContext, didPost message: NativeMessage) {
         guard context === self.context, !fellBack, !forwardChannel(message) else { return }
-        forward(message)
+        if case .task(let line, let checked) = message {
+            delegate?.contentDidToggleTask(line: line, checked: checked)
+        } else {
+            forward(message)
+        }
     }
 
     private func forwardChannel(_ message: NativeMessage) -> Bool {
@@ -14,8 +18,8 @@ extension NativePanelContent: NativeContextDelegate, NativeEvents {
             delegate?.contentDidSubscribe(channel: channel, every: every)
         case .unsubscribe(let channel):
             delegate?.contentDidUnsubscribe(channel: channel)
-        case .publish(let channel, let value):
-            delegate?.contentDidPublish(channel: channel, value: value)
+        case .publish(let channel, let value, let persist):
+            delegate?.contentDidPublish(channel: channel, value: value, persist: persist)
         default:
             return false
         }

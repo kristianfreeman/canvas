@@ -1,0 +1,13 @@
+pub --clear sends a merge with no value
+
+--- a/cli/pub.c
++++ b/cli/pub.c
+@@ -145,7 +145,7 @@
+     json_cstr(req, p->channel);
+     if (p->merge || p->clear) {
+         json_key(req, "op");
+-        buf_puts(req, p->clear ? "\"clear\"" : "\"merge\"");
++        buf_puts(req, "\"merge\"");
+     }
+     if (p->persist) {
+         json_key(req, "persist");

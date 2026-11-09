@@ -14,11 +14,31 @@ private struct ListDepthKey: EnvironmentKey {
     static let defaultValue = 0
 }
 
+/// `Markdown.onToggle`: checking or unchecking the task item on a source line.
+struct TaskToggle {
+    let fn: Int
+    let events: EventsRef
+
+    func callAsFunction(line: Int, checked: Bool) {
+        events.target?.invoke(fn, [["line": line, "checked": checked]])
+    }
+}
+
+private struct TaskToggleKey: EnvironmentKey {
+    static let defaultValue: TaskToggle? = nil
+}
+
 extension EnvironmentValues {
     /// How many lists deep a Markdown block is, for nested bullet shapes.
     var kitListDepth: Int {
         get { self[ListDepthKey.self] }
         set { self[ListDepthKey.self] = newValue }
+    }
+
+    /// Set when task checkboxes can be clicked.
+    var kitTaskToggle: TaskToggle? {
+        get { self[TaskToggleKey.self] }
+        set { self[TaskToggleKey.self] = newValue }
     }
 }
 
@@ -84,11 +104,13 @@ enum MarkdownMetrics {
 
 struct MarkdownView: View {
     @ObservedObject var node: ViewNode
+    @Environment(\.kitEvents) private var events
 
     var body: some View {
         MarkdownStack(blocks: MarkdownBlocks.decode(node.prop("blocks")), scope: .prose)
             .kitText { $0.size = MarkdownMetrics.prose.size; $0.lineHeight = MarkdownMetrics.prose.lineHeight }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .environment(\.kitTaskToggle, node.prop("onToggle")?.function.map { TaskToggle(fn: $0, events: events) })
     }
 }
 

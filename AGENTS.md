@@ -53,7 +53,8 @@ WebKit page renders only TSX that uses raw DOM or CSS.
 - **State:** `CANVAS_HOME` (default `~/Library/Application Support/Canvas`)
   has the socket, `server.lock` and `frames.json`. Point it at a temp
   directory to run an isolated server. `CANVAS_CONFIG` overrides
-  `~/.config/canvas/config.toml`.
+  `~/.config/canvas/config.toml`. The server watches it (`ConfigWatcher`)
+  and applies a changed `hotkey` at once; other keys apply at launch.
 - **Native render path:** `NativeRuntime` keeps one evaluated `JSContext`
   (bundle `web/dist/native.js`) ready on a shared VM, each on its own JS
   thread with a 2 s time limit per call. A render posts view tree ops;
@@ -97,7 +98,7 @@ it in that commit too when a command, flag, exit code or kit export it
 mentions changes.
 
 In short: the commands are `show`, `toggle`, `update`, `move`, `hide`,
-`list`, `pub`, `sub`, `ping` and `help`, and exit codes are 0 success, 1
+`list`, `pub`, `sub`, `get`, `hotkeys`, `ping` and `help`, and exit codes are 0 success, 1
 error, 2 closed or replaced, 3 timeout and 64 usage. The renderer in `web/`
 builds with `bun run build` to `web/dist/index.html` with one inline IIFE
 script, since browsers block ES modules from `file://`. No network, no CDN,
@@ -186,6 +187,16 @@ Always spell the folder `Tests/`. This Mac's file system ignores case, so
   `canvas.sys.*` sampler, and the neutral theme. Examples: `hello.md`,
   `dashboard.tsx`, `approve.tsx`, `keys.tsx` with `keys.json`, `live.tsx` (a
   channel readout) and `top.tsx` (a btop-style system monitor).
+- **Done (to-dos):** clickable Markdown task checkboxes written back to the
+  file (`TaskList` in CanvasCore), persisted channels (`pub --persist`,
+  `pub --clear`, `get`, the kit's `useStore`, saved to `store.json`), and
+  hotkeys: `--hotkey` per id (saved to `hotkeys.json`), the global `hotkey`
+  in config.toml and `toggle --all`, which stash panels without closing
+  them. Hotkeys use Carbon `RegisterEventHotKey` (`HotkeyCenter`).
+  Examples `todo.md` and `todo.tsx`. Checked on screen on 2026-11-09:
+  box clicks, a panel hotkey, `toggle --all`, the config hotkey, and
+  `useStore` across a server restart. macOS sends a shortcut that two apps
+  hold to both, so Canvas can't detect a clash.
 - **Done (native):** the in-process JavaScriptCore runtime and SwiftUI kit
   in `docs/native.md`. Every example renders natively. Idle memory is about
   54 MB with no WebKit process.

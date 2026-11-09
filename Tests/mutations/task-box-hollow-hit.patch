@@ -1,0 +1,13 @@
+An open task box takes clicks only on its 1.5 pt ring, not in its hollow middle
+
+--- a/Sources/CanvasApp/Native/Kit/KitMarkdownParts.swift
++++ b/Sources/CanvasApp/Native/Kit/KitMarkdownParts.swift
+@@ -140,7 +140,7 @@ private struct MarkdownTaskItem: View {
+             // The shape goes on the label: a plain button hit-tests its label,
+             // and an open box is hollow, so a click in its middle missed.
+             Button { toggle(line: line, checked: !item.checked) } label: {
+-                glyph.contentShape(Rectangle().inset(by: -4))
++                glyph
+             }
+                 .buttonStyle(.plain)
+                 .accessibilityLabel(item.checked ? "Uncheck task" : "Check task")

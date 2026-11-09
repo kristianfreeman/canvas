@@ -1,0 +1,13 @@
+Markdown task items report the line their item ends on, so a click toggles the wrong line
+
+--- a/web/native/markdown.ts
++++ b/web/native/markdown.ts
+@@ -79,7 +79,7 @@
+   c.pos++
+ 
+   while (peek(c)?.type === 'list_item_open') {
+-    const line = peek(c).map?.[0]
++    const line = peek(c).map?.[1]
+     c.pos++
+     items.push(taskItem(blocks(c, 'list_item_close'), line))
+   }

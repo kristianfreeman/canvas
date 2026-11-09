@@ -7,7 +7,8 @@ export type Message =
   | { type: 'close'; reason?: 'escape' }
   | { type: 'subscribe'; channel: string; every?: number }
   | { type: 'unsubscribe'; channel: string }
-  | { type: 'publish'; channel: string; value: unknown }
+  | { type: 'publish'; channel: string; value: unknown; persist?: true }
+  | { type: 'task'; line: number; checked: boolean }
   | { type: 'error'; message: string; stack?: string; needsWeb?: true }
   | { type: 'open'; url: string }
 

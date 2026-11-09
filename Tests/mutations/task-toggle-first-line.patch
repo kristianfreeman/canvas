@@ -1,0 +1,13 @@
+A task click toggles the document's first line, whichever line was clicked
+
+--- a/Sources/CanvasCore/TaskList.swift
++++ b/Sources/CanvasCore/TaskList.swift
+@@ -31,7 +31,7 @@
+     static func lineRange(_ index: Int, in source: String) -> Range<String.Index>? {
+         guard index >= 0 else { return nil }
+         var start = source.startIndex
+-        var remaining = index
++        var remaining = 0
+         while remaining > 0 {
+             guard let end = source[start...].firstIndex(where: \.isLineBreak) else { return nil }
+             start = source.index(after: end)

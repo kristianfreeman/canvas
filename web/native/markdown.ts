@@ -8,7 +8,7 @@ const md = new MarkdownIt({ html: false, linkify: true, typographer: true }).use
 
 type Align = 'left' | 'center' | 'right' | null
 
-export type ListItem = { task?: true; checked?: boolean; blocks: Block[] }
+export type ListItem = { task?: true; checked?: boolean; line?: number; blocks: Block[] }
 
 export type Block =
   | { t: 'h'; level: number; inl: Inline[] }
@@ -56,8 +56,8 @@ function taskMarker(first: Block | undefined) {
   return match ? { inl: first.inl, run, match } : null
 }
 
-/** Strips a leading `[ ] ` or `[x] ` from the item's first paragraph and marks the item as a task. */
-function taskItem(content: Block[]): ListItem {
+/** Strips a leading `[ ] ` or `[x] ` from the item's first paragraph and marks the item as a task, with the source line it starts on. */
+function taskItem(content: Block[], line: number | undefined): ListItem {
   const marker = taskMarker(content[0])
 
   if (!marker) return { blocks: content }
@@ -65,8 +65,9 @@ function taskItem(content: Block[]): ListItem {
   run.s = run.s.slice(match[0].length)
 
   if (!run.s) inl.shift()
+  const checked = match[1] !== ' '
 
-  return { task: true, checked: match[1] !== ' ', blocks: content }
+  return line === undefined ? { task: true, checked, blocks: content } : { task: true, checked, line, blocks: content }
 }
 
 function list(c: Cursor): Block {
@@ -78,8 +79,9 @@ function list(c: Cursor): Block {
   c.pos++
 
   while (peek(c)?.type === 'list_item_open') {
+    const line = peek(c).map?.[0]
     c.pos++
-    items.push(taskItem(blocks(c, 'list_item_close')))
+    items.push(taskItem(blocks(c, 'list_item_close'), line))
   }
 
   skipPast(c, close)

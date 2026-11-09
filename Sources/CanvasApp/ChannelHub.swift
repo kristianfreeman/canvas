@@ -17,6 +17,9 @@ final class ChannelHub {
     private var sinks: [ObjectIdentifier: PageChannels] = [:]
     private var clients: [Int: [SubscriptionID]] = [:]
     private var nextClient = 0
+    /// Where persisted channels are saved; nil keeps them in memory only.
+    private var storePath: String?
+    private var pendingSave: DispatchWorkItem?
 
     init() {
         sampler.onSample = { [weak self] samples in self?.publish(samples) }
@@ -24,6 +27,45 @@ final class ChannelHub {
 
     func publish(_ message: ChannelMessage) throws(ChannelError) {
         try store.publish(message)
+        if message.op == .clear || store.isPersisted(message.channel) { scheduleSave() }
+    }
+
+    // MARK: Persistence
+
+    /// Loads the persisted channels saved at `path` and saves them there
+    /// from now on.
+    func persist(to path: String) {
+        storePath = path
+        guard let data = FileManager.default.contents(atPath: path) else { return }
+        guard let values = JSON.decode(data) as? [String: Any] else {
+            debugLog("ignoring \(path): not a JSON object")
+            return
+        }
+        store.restore(values)
+    }
+
+    private func scheduleSave() {
+        guard storePath != nil, pendingSave == nil else { return }
+        let item = DispatchWorkItem { [weak self] in self?.save() }
+        pendingSave = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: item)
+    }
+
+    /// Writes a pending save now, at exit.
+    func flush() {
+        guard let item = pendingSave else { return }
+        item.cancel()
+        save()
+    }
+
+    private func save() {
+        pendingSave = nil
+        guard let storePath, let data = JSON.encode(store.persistedValues) else { return }
+        do {
+            try data.write(to: URL(fileURLWithPath: storePath), options: .atomic)
+        } catch {
+            debugLog("could not save \(storePath): \(error)")
+        }
     }
 
     private func publish(_ samples: [(SysChannel, Any)]) {

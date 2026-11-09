@@ -21,6 +21,10 @@ public enum Paths {
     public static var lock: String { support.appendingPathComponent("server.lock").path }
     public static var frames: String { support.appendingPathComponent("frames.json").path }
     public static var log: String { support.appendingPathComponent("server.log").path }
+    /// Panel hotkeys (`--hotkey`).
+    public static var hotkeys: String { support.appendingPathComponent("hotkeys.json").path }
+    /// Persisted channel values (`pub --persist`, `useStore`).
+    public static var store: String { support.appendingPathComponent("store.json").path }
 
     /// `CANVAS_CONFIG` overrides it.
     public static var config: URL {
